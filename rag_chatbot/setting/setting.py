@@ -25,7 +25,7 @@ class RetrieverSettings(BaseModel):
     )
     top_k_rerank: int = Field(default=5, description="Top k rerank")
     rerank_llm: str = Field(
-        default="jinaai/jina-reranker-v2-base-multilingual",
+        default="DiTy/cross-encoder-russian-msmarco",
         description="Rerank LLM model",
     )
     fusion_mode: str = Field(default="dist_based_score", description="Fusion mode")

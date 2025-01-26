@@ -56,7 +56,6 @@ class TwoStageRetriever(QueryFusionRetriever):
         self._rerank_model = SentenceTransformerRerank(
             top_n=self._setting.retriever.top_k_rerank,
             model=self._setting.retriever.rerank_llm,
-            trust_remote_code=True,
         )
 
     def _retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
