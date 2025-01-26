@@ -40,7 +40,7 @@ class IngestionSettings(BaseModel):
         default="[^,.;。？！]+[,.;。？！]?", description="Chunking regex"
     )
     paragraph_sep: str = Field(default="\n \n", description="Paragraph separator")
-    num_workers: int = Field(default=0, description="Number of workers")
+    # num_workers: int = Field(default=0, description="Number of workers")
 
 
 class StorageSettings(BaseModel):
