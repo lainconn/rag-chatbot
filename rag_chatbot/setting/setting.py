@@ -23,9 +23,10 @@ class RetrieverSettings(BaseModel):
     retriever_weights: List[float] = Field(
         default=[0.4, 0.6], description="Weights for retriever"
     )
-    top_k_rerank: int = Field(default=6, description="Top k rerank")
+    top_k_rerank: int = Field(default=5, description="Top k rerank")
     rerank_llm: str = Field(
-        default="BAAI/bge-reranker-large", description="Rerank LLM model"
+        default="jinaai/jina-reranker-v2-base-multilingual",
+        description="Rerank LLM model",
     )
     fusion_mode: str = Field(default="dist_based_score", description="Fusion mode")
 
