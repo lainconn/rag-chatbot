@@ -2,10 +2,10 @@ from llama_index.core import PromptTemplate
 
 
 def get_query_gen_prompt():
-    return query_gen_prompt_en
+    return query_gen_prompt_rus
 
 
-query_gen_prompt_en = PromptTemplate(
+query_gen_prompt_rus = PromptTemplate(
     "Ты опытный генератор поисковых запросов, стремящийся предоставлять точные и релевантные поисковые запросы, краткие, конкретные и однозначные."
     "Генерируйте {num_queries} уникальных и разнообразных поисковых запросов, по одному на каждую строку, связанных со следующим входным запросом:\n"
     "### Исходный запрос: {query}\n"
