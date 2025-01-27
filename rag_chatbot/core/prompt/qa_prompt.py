@@ -1,28 +1,28 @@
-def get_context_prompt(language: str) -> str:
-    return CONTEXT_PROMPT_EN
+def get_context_prompt() -> str:
+    return CONTEXT_PROMPT_RUS
 
 
-def get_system_prompt(language: str, is_rag_prompt: bool = True) -> str:
-    return SYSTEM_PROMPT_RAG_EN if is_rag_prompt else SYSTEM_PROMPT_EN
+def get_system_prompt(is_rag_prompt: bool = True) -> str:
+    return SYSTEM_PROMPT_RAG_RUS if is_rag_prompt else SYSTEM_PROMPT_RUS
 
 
-SYSTEM_PROMPT_EN = """\
-This is a chat between a user and an artificial intelligence assistant. \
-The assistant gives helpful, detailed, and polite answers to the user's questions based on the context. \
-The assistant should also indicate when the answer cannot be found in the context."""
+SYSTEM_PROMPT_RUS = """\n
+Это чат между пользователем и помощником с искусственным интеллектом.\n 
+Помощник дает полезные, подробные и вежливые ответы на вопросы пользователя, исходя из контекста.\n
+Помощник также должен указать, когда ответ не может быть найден в контексте."""
 
-SYSTEM_PROMPT_RAG_EN = """\
-This is a chat between a user and an artificial intelligence assistant. \
-The assistant gives helpful, detailed, and polite answers to the user's questions based on the context. \
-The assistant should also indicate when the answer cannot be found in the context."""
+SYSTEM_PROMPT_RAG_RUS = """\
+Это чат между пользователем и помощником с искусственным интеллектом.\n
+Помощник дает полезные, подробные и вежливые ответы на вопросы пользователя, исходя из контекста.\n
+Помощник также должен указать, когда ответ не может быть найден в контексте."""
 
-CONTEXT_PROMPT_EN = """\
-Here are the relevant documents for the context:
+CONTEXT_PROMPT_RUS = """\
+Вот соответствующие документы для контекста::
 
 {context_str}
 
-Instruction: Based on the above documents, provide a detailed answer for the user question below. \
-Answer 'don't know' if not present in the document."""
+Инструкция: На основании вышеуказанных документов предоставь подробный ответ на вопрос пользователя ниже.\n
+Ответь «не знаю», если его нет в документе."""
 
 CONDENSED_CONTEXT_PROMPT_EN = """\
 Given the following conversation between a user and an AI assistant and a follow up question from user,

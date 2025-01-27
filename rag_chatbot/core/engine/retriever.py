@@ -106,7 +106,6 @@ class LocalRetriever:
         self,
         vector_index: VectorStoreIndex,
         llm: LLM | None = None,
-        language: str = "eng",
         gen_query: bool = True,
     ):
         # VECTOR INDEX RETRIEVER
@@ -129,7 +128,7 @@ class LocalRetriever:
                 retrievers=[bm25_retriever, vector_retriever],
                 retriever_weights=self._setting.retriever.retriever_weights,
                 llm=llm,
-                query_gen_prompt=get_query_gen_prompt(language),
+                query_gen_prompt=get_query_gen_prompt(),
                 similarity_top_k=self._setting.retriever.top_k_rerank,
                 num_queries=self._setting.retriever.num_queries,
                 mode=self._setting.retriever.fusion_mode,
