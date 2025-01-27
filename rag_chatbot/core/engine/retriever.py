@@ -155,16 +155,12 @@ class LocalRetriever:
         language: str = "eng",
     ):
         fusion_tool = RetrieverTool.from_defaults(
-            retriever=self._get_hybrid_retriever(
-                vector_index, llm, language, gen_query=True
-            ),
+            retriever=self._get_hybrid_retriever(vector_index, llm, gen_query=True),
             description="Use this tool when the user's query is ambiguous or unclear.",
             name="Fusion Retriever with BM25 and Vector Retriever and LLM Query Generation.",
         )
         two_stage_tool = RetrieverTool.from_defaults(
-            retriever=self._get_hybrid_retriever(
-                vector_index, llm, language, gen_query=False
-            ),
+            retriever=self._get_hybrid_retriever(vector_index, llm, gen_query=False),
             description="Use this tool when the user's query is clear and unambiguous.",
             name="Two Stage Retriever with BM25 and Vector Retriever and LLM Rerank.",
         )
