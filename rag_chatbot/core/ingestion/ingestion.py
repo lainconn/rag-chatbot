@@ -1,5 +1,3 @@
-import re
-import fitz
 from llama_index.core import Document, Settings
 from llama_index.core.schema import BaseNode
 from llama_index.core.node_parser import SentenceSplitter
@@ -7,6 +5,7 @@ from dotenv import load_dotenv
 from typing import Any, List
 from tqdm import tqdm
 from ...setting import RAGSettings
+from unstructured.partition.auto import partition
 
 load_dotenv()
 
@@ -16,17 +15,6 @@ class LocalDataIngestion:
         self._setting = setting or RAGSettings()
         self._node_store = {}
         self._ingested_file = []
-
-    def _filter_text(self, text):
-        # Define the regex pattern.
-        pattern = r'[a-zA-Z0-9 \u00C0-\u01B0\u0400-\u04FF`~!@#$%^&*()_\-+=\[\]{}|\\;:\'",.<>/?]+'
-        matches = re.findall(pattern, text)
-        # Join all matched substrings into a single string
-        filtered_text = " ".join(matches)
-        # Normalize the text by removing extra whitespaces
-        normalized_text = re.sub(r"\s+", " ", filtered_text.strip())
-
-        return normalized_text
 
     def store_nodes(
         self,
@@ -46,20 +34,22 @@ class LocalDataIngestion:
         )
         if embed_nodes:
             Settings.embed_model = embed_model or Settings.embed_model
-        for input_file in tqdm(input_files, desc="Ingesting data"):
+        for input_file in tqdm(input_files):
             file_name = input_file.strip().split("/")[-1]
             self._ingested_file.append(file_name)
             if file_name in self._node_store:
                 return_nodes.extend(self._node_store[file_name])
             else:
-                document = fitz.open(input_file)
-                all_text = ""
-                for doc_idx, page in enumerate(document):
-                    page_text = page.get_text("text")
-                    page_text = self._filter_text(page_text)
-                    all_text += " " + page_text
+                elements = partition(
+                    filename=file_name,
+                    languages=["rus", "eng"],
+                )
+                text = " "
+                for element in elements:
+                    text += element.text
+
                 document = Document(
-                    text=all_text.strip(),
+                    text=text,
                     metadata={
                         "file_name": file_name,
                     },
