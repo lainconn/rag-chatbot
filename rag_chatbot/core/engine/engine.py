@@ -22,7 +22,6 @@ class LocalChatEngine:
         self,
         llm: LLM,
         nodes: List[BaseNode],
-        language: str = "eng",
     ) -> CondensePlusContextChatEngine | SimpleChatEngine:
 
         # Normal chat engine
@@ -37,7 +36,6 @@ class LocalChatEngine:
         # Chat engine with documents
         retriever = self._retriever.get_retrievers(
             llm=llm,
-            language=language,
             nodes=nodes
         )
         return CondensePlusContextChatEngine.from_defaults(

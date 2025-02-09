@@ -92,7 +92,6 @@ class LocalRetriever:
         self,
         vector_index: VectorStoreIndex,
         llm: LLM | None = None,
-        language: str = "eng",
     ):
         llm = llm or Settings.llm
         return VectorIndexRetriever(
@@ -152,16 +151,15 @@ class LocalRetriever:
         self,
         vector_index: VectorStoreIndex,
         llm: LLM | None = None,
-        language: str = "eng",
     ):
         fusion_tool = RetrieverTool.from_defaults(
             retriever=self._get_hybrid_retriever(vector_index, llm, gen_query=True),
-            description="Use this tool when the user's query is ambiguous or unclear.",
+            description="Используй этот инструмент, если запрос пользователя неоднозначен или неясен.",
             name="Fusion Retriever with BM25 and Vector Retriever and LLM Query Generation.",
         )
         two_stage_tool = RetrieverTool.from_defaults(
             retriever=self._get_hybrid_retriever(vector_index, llm, gen_query=False),
-            description="Use this tool when the user's query is clear and unambiguous.",
+            description="Используй этот инструмент, когда запрос пользователя ясен и недвусмыслен.",
             name="Two Stage Retriever with BM25 and Vector Retriever and LLM Rerank.",
         )
 
@@ -175,12 +173,11 @@ class LocalRetriever:
         self,
         nodes: List[BaseNode],
         llm: LLM | None = None,
-        language: str = "eng",
     ):
         vector_index = VectorStoreIndex(nodes=nodes)
         if len(nodes) > self._setting.retriever.top_k_rerank:
-            retriever = self._get_router_retriever(vector_index, llm, language)
+            retriever = self._get_router_retriever(vector_index, llm)
         else:
-            retriever = self._get_normal_retriever(vector_index, llm, language)
+            retriever = self._get_normal_retriever(vector_index, llm)
 
         return retriever
