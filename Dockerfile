@@ -1,5 +1,7 @@
-FROM python:3.11-slim
+FROM downloads.unstructured.io/unstructured-io/unstructured:latest
+ENV PYTHONPATH="/app"
 WORKDIR /code
+USER root
 COPY ./ /code
 RUN pip install .
 
