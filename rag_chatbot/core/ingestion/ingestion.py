@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from typing import Any, List
 from tqdm import tqdm
 from ...setting import RAGSettings
-#from unstructured.partition.auto import partition
+from unstructured.partition.auto import partition
 
 load_dotenv()
 
@@ -40,13 +40,13 @@ class LocalDataIngestion:
             if file_name in self._node_store:
                 return_nodes.extend(self._node_store[file_name])
             else:
-                # elements = partition(
-                #     filename=input_file,
-                #     languages=["rus", "eng"],
-                # )
+                elements = partition(
+                    filename=input_file,
+                    languages=["rus", "eng"],
+                )
                 text = " "
-                # for element in elements:
-                #     text += element.text
+                for element in elements:
+                    text += element.text
 
                 document = Document(
                     text=text,
