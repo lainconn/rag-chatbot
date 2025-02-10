@@ -280,8 +280,8 @@ class LocalChatbotUI:
                             )
                             language = gr.Radio(
                                 label="Language",
-                                choices=["vi", "eng"],
-                                value="eng",
+                                choices=["rus"],
+                                value="rus",
                                 interactive=True,
                             )
                             model = gr.Dropdown(
