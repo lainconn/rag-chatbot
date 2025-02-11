@@ -2,16 +2,16 @@ services:
   app:
     container_name: app
     build: .
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
     ports:
       - 7860:7860
-    volumes:
+    volumes:  
       - .:/code
     networks:
       - local_network
@@ -34,7 +34,7 @@ services:
           devices:
             - driver: nvidia
               count: all
-              capabilities: [gpu]
+              capabilities: [compute, utility]
     ports:
       - 11434:11434
     volumes:
