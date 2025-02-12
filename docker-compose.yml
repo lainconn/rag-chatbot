@@ -35,6 +35,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [compute, utility]
+    runtime: nvidia
     ports:
       - 11434:11434
     volumes:
