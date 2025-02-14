@@ -2,13 +2,6 @@ services:
   app:
     container_name: app
     build: .
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [gpu]
     ports:
       - 7860:7860
     volumes:  
@@ -39,10 +32,15 @@ services:
     ports:
       - 11434:11434
     volumes:
-      - ./data/ollama:/root/.ollama
+      - type: volume
+        source: ollama
+        target: /root/.ollama
     networks:
       - local_network
       
 networks:
   local_network:
     driver: bridge
+
+volumes:
+  ollama:
