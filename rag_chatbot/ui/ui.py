@@ -208,7 +208,7 @@ class LocalChatbotUI:
             input_files = []
             for file_path in document:
                 dest = os.path.join(self._data_dir, file_path.split("/")[-1])
-                shutil.move(src=file_path, dst=dest)
+                shutil.copy(src=file_path, dst=dest)
                 input_files.append(dest)
             self._pipeline.store_nodes(input_files=input_files)
         else:
@@ -287,7 +287,7 @@ class LocalChatbotUI:
                             model = gr.Dropdown(
                                 label="Choose Model:",
                                 choices=[
-                                    "llama3.1:8b-instruct-q8_0",
+                                    "phi4",
                                 ],
                                 value=None,
                                 interactive=True,
@@ -352,9 +352,11 @@ class LocalChatbotUI:
                             )
                         with gr.Row(variant=self._variant):
                             ui_btn = gr.Button(
-                                value="Hide Setting"
-                                if sidebar_state.value
-                                else "Show Setting",
+                                value=(
+                                    "Hide Setting"
+                                    if sidebar_state.value
+                                    else "Show Setting"
+                                ),
                                 min_width=20,
                             )
                             undo_btn = gr.Button(value="Undo", min_width=20)
@@ -402,7 +404,9 @@ class LocalChatbotUI:
                 self._pull_model,
                 inputs=[model],
                 outputs=[message, chatbot, status, model],
-            ).then(self._change_model, inputs=[model], outputs=[status])
+            ).then(
+                self._change_model, inputs=[model], outputs=[status]
+            )
             message.submit(
                 self._upload_document, inputs=[documents, message], outputs=[documents]
             ).then(
