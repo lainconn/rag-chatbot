@@ -4,7 +4,7 @@ services:
     build: .
     ports:
       - 7860:7860
-    volumes:
+    volumes:  
       - .:/code
     networks:
       - local_network
@@ -21,13 +21,24 @@ services:
   ollama:
     container_name: ollama
     image: ollama/ollama:latest
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [compute, utility]
+    runtime: nvidia
     ports:
       - 11434:11434
     volumes:
-      - ./data/ollama:/root/.ollama
+      - ollama:/root/.ollama
     networks:
       - local_network
       
 networks:
   local_network:
     driver: bridge
+
+volumes:
+  ollama:
