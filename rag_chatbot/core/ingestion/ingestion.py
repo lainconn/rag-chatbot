@@ -43,10 +43,12 @@ class LocalDataIngestion:
                 elements = partition(
                     filename=input_file,
                     languages=["rus", "eng"],
+                    strategy="fast",
+                    # skip_infer_table_types=["jpg", "png", "heic"],
                 )
                 text = " "
                 for element in elements:
-                    text += element.text
+                    text += "\n\n" + element.text
 
                 document = Document(
                     text=text,
