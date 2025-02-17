@@ -32,9 +32,7 @@ services:
     ports:
       - 11434:11434
     volumes:
-      - type: volume
-        source: ollama
-        target: /root/.ollama
+      - ollama:/root/.ollama
     networks:
       - local_network
       
