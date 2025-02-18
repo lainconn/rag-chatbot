@@ -287,6 +287,9 @@ class LocalChatbotUI:
                             model = gr.Dropdown(
                                 label="Choose Model:",
                                 choices=[
+                                    "llama3.1",
+                                    "llama3.2",
+                                    "deepseek-r1:14b",
                                     "phi4",
                                 ],
                                 value=None,
