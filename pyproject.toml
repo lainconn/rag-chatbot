@@ -7,6 +7,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 gradio = "<5.0"
+chromadb = "*"
 python-dotenv = "^1.0.1"
 pydantic = "^2.6.4"
 llama-index-embeddings-huggingface = "^0.1.4"
