@@ -5,15 +5,20 @@ from dotenv import load_dotenv
 from typing import Any, List
 from tqdm import tqdm
 from ...setting import RAGSettings
+from ..vector_store import LocalVectorStore
 from unstructured.partition.auto import partition
 
 load_dotenv()
 
 
 class LocalDataIngestion:
-    def __init__(self, setting: RAGSettings | None = None) -> None:
+    def __init__(
+        self,
+        setting: RAGSettings | None = None,
+        chroma: LocalVectorStore | None = None,
+    ) -> None:
         self._setting = setting or RAGSettings()
-        self._node_store = {}
+        self._node_store = chroma.create_vector_store()
         self._ingested_file = []
 
     def store_nodes(
@@ -22,10 +27,8 @@ class LocalDataIngestion:
         embed_nodes: bool = True,
         embed_model: Any | None = None,
     ) -> List[BaseNode]:
-        return_nodes = []
-        self._ingested_file = []
         if len(input_files) == 0:
-            return return_nodes
+            return []
         splitter = SentenceSplitter.from_defaults(
             chunk_size=self._setting.ingestion.chunk_size,
             chunk_overlap=self._setting.ingestion.chunk_overlap,
@@ -36,33 +39,31 @@ class LocalDataIngestion:
             Settings.embed_model = embed_model or Settings.embed_model
         for input_file in tqdm(input_files):
             file_name = input_file.strip().split("/")[-1]
-            self._ingested_file.append(file_name)
-            if file_name in self._node_store:
-                return_nodes.extend(self._node_store[file_name])
-            else:
-                elements = partition(
-                    filename=input_file,
-                    languages=["rus", "eng"],
-                    strategy="fast",
-                    # skip_infer_table_types=["jpg", "png", "heic"],
-                )
-                text = " "
-                for element in elements:
-                    text += "\n\n" + element.text
+            # if file_name in self._node_store:
+            #     return_nodes.extend(self._node_store[file_name])
+            # else:
+            elements = partition(
+                filename=input_file,
+                languages=["rus", "eng"],
+                strategy="fast",
+                skip_infer_table_types=["jpg", "png", "heic"],
+            )
+            text = " "
+            for element in elements:
+                text += "\n\n" + element.text
 
-                document = Document(
-                    text=text,
-                    metadata={
-                        "file_name": file_name,
-                    },
-                )
+            document = Document(
+                text=text,
+                metadata={
+                    "file_name": file_name,
+                },
+            )
 
-                nodes = splitter([document], show_progress=True)
-                if embed_nodes:
-                    nodes = Settings.embed_model(nodes, show_progress=True)
-                self._node_store[file_name] = nodes
-                return_nodes.extend(nodes)
-        return return_nodes
+            nodes = splitter([document], show_progress=True)
+            if embed_nodes:
+                nodes = Settings.embed_model(nodes, show_progress=True)
+            self._node_store.add(nodes)
+        return self._node_store.get_nodes()
 
     def reset(self):
         self._node_store = {}
