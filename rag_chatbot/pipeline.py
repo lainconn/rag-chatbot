@@ -20,7 +20,7 @@ class LocalRAGPipeline:
         self._default_model = LocalRAGModel.set(self._model_name, host=host)
         self._query_engine = None
         self._ingestion = LocalDataIngestion()
-        self._vector_store = LocalVectorStore(host=host)
+        self._vector_store = LocalVectorStore()
         Settings.llm = LocalRAGModel.set(host=host)
         Settings.embed_model = LocalEmbedding.set(host=host)
 

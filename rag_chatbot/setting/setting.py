@@ -34,7 +34,7 @@ class RetrieverSettings(BaseModel):
 class IngestionSettings(BaseModel):
     embed_llm: str = Field(default="BAAI/bge-m3", description="Embedding LLM model")
     embed_batch_size: int = Field(default=8, description="Embedding batch size")
-    cache_folder: str = Field(default="data/huggingface", description="Cache folder")
+    # cache_folder: str = Field(default="data/huggingface", description="Cache folder")
     chunk_size: int = Field(default=512, description="Document chunk size")
     chunk_overlap: int = Field(default=32, description="Document chunk overlap")
     chunking_regex: str = Field(
