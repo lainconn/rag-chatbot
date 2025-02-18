@@ -15,16 +15,14 @@ class LocalDataIngestion:
     def __init__(
         self,
         setting: RAGSettings | None = None,
-        chroma: LocalVectorStore | None = None,
     ) -> None:
         self._setting = setting or RAGSettings()
-        self._node_store = chroma.create_vector_store()
+        self._node_store = LocalVectorStore().setup()
         self._ingested_file = []
 
     def store_nodes(
         self,
         input_files: list[str],
-        embed_nodes: bool = True,
         embed_model: Any | None = None,
     ) -> List[BaseNode]:
         if len(input_files) == 0:
@@ -35,12 +33,11 @@ class LocalDataIngestion:
             paragraph_separator=self._setting.ingestion.paragraph_sep,
             secondary_chunking_regex=self._setting.ingestion.chunking_regex,
         )
-        if embed_nodes:
-            Settings.embed_model = embed_model or Settings.embed_model
+        Settings.embed_model = embed_model or Settings.embed_model
         for input_file in tqdm(input_files):
             file_name = input_file.strip().split("/")[-1]
-            # if file_name in self._node_store:
-            #     return_nodes.extend(self._node_store[file_name])
+            # if unique_id in self._node_store:
+            #     return self._node_store.get_nodes(node_ids=unique_id)
             # else:
             elements = partition(
                 filename=input_file,
@@ -48,6 +45,7 @@ class LocalDataIngestion:
                 strategy="fast",
                 skip_infer_table_types=["jpg", "png", "heic"],
             )
+
             text = " "
             for element in elements:
                 text += "\n\n" + element.text
@@ -60,26 +58,27 @@ class LocalDataIngestion:
             )
 
             nodes = splitter([document], show_progress=True)
-            if embed_nodes:
-                nodes = Settings.embed_model(nodes, show_progress=True)
-            self._node_store.add(nodes)
-        return self._node_store.get_nodes()
+            nodes = Settings.embed_model(nodes, show_progress=True)
+            all_ids = self._node_store.add(nodes)
+        return self._node_store.get_nodes(node_ids=all_ids)
 
-    def reset(self):
-        self._node_store = {}
-        self._ingested_file = []
+    # def reset(self):
+    #     self._node_store.delete_nodes()
 
     def check_nodes_exist(self):
-        return len(self._node_store.values()) > 0
+        return True
 
-    def get_all_nodes(self):
-        return_nodes = []
-        for nodes in self._node_store.values():
-            return_nodes.extend(nodes)
-        return return_nodes
+    #     return len(self._node_store.values()) > 0
+
+    # def get_all_nodes(self):
+    #     return_nodes = []
+    #     for nodes in self._node_store.values():
+    #         return_nodes.extend(nodes)
+    #     return return_nodes
 
     def get_ingested_nodes(self):
-        return_nodes = []
-        for file in self._ingested_file:
-            return_nodes.extend(self._node_store[file])
-        return return_nodes
+        return []
+        # return_nodes = []
+        # for file in self._ingested_file:
+        #     return_nodes.extend(self._node_store[file])
+        # return return_nodes

@@ -8,21 +8,19 @@ load_dotenv()
 
 
 class LocalVectorStore:
-    def __init__(
+    def __init__(self) -> None:
+        pass
+
+    def setup(
         self,
         host: str = "host.docker.internal",
         setting: RAGSettings | None = None,
-    ) -> None:
+    ):
         self._setting = setting or RAGSettings()
-
-    def create_vector_store(self):
-        chroma_client = chromadb.PersistentClient(
-            path=self._setting.storage.persist_dir_storage
-        )
-        chroma_collection = chroma_client.create_collection(
+        chroma_client = chromadb.HttpClient(host=host, port=self._setting.storage.port)
+        chroma_collection = chroma_client.get_or_create_collection(
             self._setting.storage.collection_name
         )
-
         vectore_store = ChromaVectorStore(chroma_collection=chroma_collection)
         return vectore_store
 
