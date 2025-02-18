@@ -2,6 +2,9 @@ services:
   app:
     container_name: app
     build: .
+    depends_on:
+      ollama:
+        condition: service_started
     ports:
       - 7860:7860
     volumes:  
