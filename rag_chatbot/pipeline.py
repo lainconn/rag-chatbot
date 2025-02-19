@@ -59,20 +59,17 @@ class LocalRAGPipeline:
         self.reset_engine()
         self.set_system_prompt(get_system_prompt(is_rag_prompt=False))
 
-    def set_embed_model(self, model_name: str):
-        Settings.embed_model = LocalEmbedding.set(model_name, self._host)
-
     def pull_model(self, model_name: str):
         return LocalRAGModel.pull(self._host, model_name)
 
-    def pull_embed_model(self, model_name: str):
-        return LocalEmbedding.pull(self._host, model_name)
+    def pull_embed_model(self):
+        return LocalEmbedding.pull(self._host)
 
     def check_exist(self, model_name: str) -> bool:
         return LocalRAGModel.check_model_exist(self._host, model_name)
 
-    def check_exist_embed(self, model_name: str) -> bool:
-        return LocalEmbedding.check_model_exist(self._host, model_name)
+    def check_exist_embed(self) -> bool:
+        return LocalEmbedding.check_model_exist(self._host)
 
     def store_nodes(self, input_files: list[str] = None) -> None:
         self._ingestion.store_nodes(input_files=input_files)

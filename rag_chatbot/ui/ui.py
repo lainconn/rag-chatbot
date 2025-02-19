@@ -24,7 +24,7 @@ class DefaultElement:
     EMPTY_MESSAGE: str = "You need to enter your message!"
     DEFAULT_STATUS: str = "Ready!"
     CONFIRM_PULL_MODEL_STATUS: str = "Confirm Pull Model!"
-    PULL_MODEL_SCUCCESS_STATUS: str = "Pulling model 🤖 completed!"
+    PULL_MODEL_SUCCESS_STATUS: str = "Pulling model 🤖 completed!"
     PULL_MODEL_FAIL_STATUS: str = "Pulling model 🤖 failed!"
     MODEL_NOT_EXIST_STATUS: str = "Model doesn't exist!"
     PROCESS_DOCUMENT_SUCCESS_STATUS: str = "Processing documents 📄 completed!"
@@ -159,8 +159,34 @@ class LocalChatbotUI:
         return (
             DefaultElement.DEFAULT_MESSAGE,
             DefaultElement.DEFAULT_HISTORY,
-            DefaultElement.PULL_MODEL_SCUCCESS_STATUS,
+            DefaultElement.PULL_MODEL_SUCCESS_STATUS,
             model,
+        )
+
+    def _pull_embed_model(self, progress=gr.Progress(track_tqdm=True)):
+        if not self._pipeline.check_exist_embed():
+            response = self._pipeline.pull_embed_model()
+            if response.status_code == 200:
+                gr.Info(f"Pulling embedding model completed!")
+                for data in response.iter_lines(chunk_size=1):
+                    data = json.loads(data)
+                    if "completed" in data.keys() and "total" in data.keys():
+                        progress(data["completed"] / data["total"], desc="Downloading")
+                    else:
+                        progress(0.0)
+            else:
+                gr.Warning(f"Embedding model doesn't exist!")
+                return (
+                    DefaultElement.DEFAULT_MESSAGE,
+                    DefaultElement.DEFAULT_HISTORY,
+                    DefaultElement.PULL_MODEL_FAIL_STATUS,
+                    DefaultElement.DEFAULT_MODEL,
+                )
+
+        return (
+            # DefaultElement.DEFAULT_MESSAGE,
+            # DefaultElement.DEFAULT_HISTORY,
+            DefaultElement.COMPLETED_STATUS,
         )
 
     def _change_model(self, model: str):
@@ -307,7 +333,7 @@ class LocalChatbotUI:
                             documents = gr.Files(
                                 label="Add Documents",
                                 value=[],
-                                file_types=[".txt", ".pdf", ".csv"],
+                                file_types=[".txt", ".pdf", ".csv", ".docx", "xlsx"],
                                 file_count="multiple",
                                 height=150,
                                 interactive=True,
@@ -316,7 +342,13 @@ class LocalChatbotUI:
                                 upload_doc_btn = gr.UploadButton(
                                     label="Upload",
                                     value=[],
-                                    file_types=[".txt", ".pdf", ".csv"],
+                                    file_types=[
+                                        ".txt",
+                                        ".pdf",
+                                        ".csv",
+                                        ".docx",
+                                        "xlsx",
+                                    ],
                                     file_count="multiple",
                                     min_width=20,
                                     visible=False,
@@ -388,7 +420,6 @@ class LocalChatbotUI:
                         outputs=[log],
                         every=1,
                         show_progress="hidden",
-                        # scroll_to_output=True,
                     )
 
             clear_btn.click(self._clear_chat, outputs=[message, chatbot, status])

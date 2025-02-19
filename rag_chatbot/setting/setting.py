@@ -25,14 +25,14 @@ class RetrieverSettings(BaseModel):
     )
     top_k_rerank: int = Field(default=5, description="Top k rerank")
     rerank_llm: str = Field(
-        default="DiTy/cross-encoder-russian-msmarco",
+        default="BAAI/bge-reranker-v2-m3",
         description="Rerank LLM model",
     )
     fusion_mode: str = Field(default="dist_based_score", description="Fusion mode")
 
 
 class IngestionSettings(BaseModel):
-    embed_llm: str = Field(default="BAAI/bge-m3", description="Embedding LLM model")
+    embed_llm: str = Field(default="bge-m3", description="Embedding LLM model")
     embed_batch_size: int = Field(default=8, description="Embedding batch size")
     # cache_folder: str = Field(default="data/huggingface", description="Cache folder")
     chunk_size: int = Field(default=512, description="Document chunk size")

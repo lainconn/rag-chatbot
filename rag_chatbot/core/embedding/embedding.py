@@ -13,9 +13,7 @@ load_dotenv()
 
 class LocalEmbedding:
     @staticmethod
-    def set(
-        setting: RAGSettings | None = None, host: str = "host.docker.internal", **kwargs
-    ):
+    def set(setting: RAGSettings | None = None, host: str = "host.docker.internal"):
         setting = setting or RAGSettings()
         model_name = setting.ingestion.embed_llm
         return OllamaEmbedding(
@@ -25,13 +23,13 @@ class LocalEmbedding:
         )
 
     @staticmethod
-    def pull(host: str, **kwargs):
+    def pull(host: str):
         setting = RAGSettings()
         payload = {"name": setting.ingestion.embed_llm}
         return requests.post(f"http://{host}:11434/api/pull", json=payload, stream=True)
 
     @staticmethod
-    def check_model_exist(host: str, **kwargs) -> bool:
+    def check_model_exist(host: str) -> bool:
         setting = RAGSettings()
         data = requests.get(f"http://{host}:11434/api/tags").json()
         list_model = [d["name"] for d in data["models"]]
