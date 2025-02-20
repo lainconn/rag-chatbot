@@ -164,7 +164,7 @@ class LocalChatbotUI:
         )
 
     def _pull_embed_model(self, progress=gr.Progress(track_tqdm=True)):
-        if not self._pipeline.check_exist_embed():
+        if not (self._pipeline.check_exist_embed()):
             response = self._pipeline.pull_embed_model()
             if response.status_code == 200:
                 gr.Info(f"Pulling embedding model completed!")
@@ -183,11 +183,7 @@ class LocalChatbotUI:
                     DefaultElement.DEFAULT_MODEL,
                 )
 
-        return (
-            # DefaultElement.DEFAULT_MESSAGE,
-            # DefaultElement.DEFAULT_HISTORY,
-            DefaultElement.COMPLETED_STATUS,
-        )
+        return (DefaultElement.COMPLETED_STATUS,)
 
     def _change_model(self, model: str):
         if model not in [None, ""]:
@@ -454,7 +450,7 @@ class LocalChatbotUI:
                 inputs=[model],
                 outputs=[pull_btn, cancel_btn, status],
             )
-            documents.change(
+            documents.change(self._pull_embed_model, inputs=[], outputs=[]).then(
                 self._processing_document,
                 inputs=[documents],
                 outputs=[system_prompt, status],
