@@ -37,9 +37,10 @@ class LocalDataIngestion:
         Settings.embed_model = embed_model or Settings.embed_model
         for input_file in tqdm(input_files):
             file_name = input_file.strip().split("/")[-1]
-            if set(self._ingested_file).intersection(all_ids):
+            node_ids = set(self._ingested_file).intersection(all_ids)
+            if node_ids:
                 print("Not Skipped!")
-                return self._node_store.get_nodes(node_ids=self._ingested_file)
+                return self._node_store.get_nodes(node_ids=node_ids)
             else:
                 elements = partition(
                     filename=input_file,
