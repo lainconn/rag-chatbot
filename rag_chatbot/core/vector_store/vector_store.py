@@ -21,8 +21,8 @@ class LocalVectorStore:
         chroma_collection = chroma_client.get_or_create_collection(
             self._setting.storage.collection_name
         )
-        vectore_store = ChromaVectorStore(chroma_collection=chroma_collection)
-        return vectore_store
+        vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+        return vector_store
 
     def get_index(self, nodes):
         if len(nodes) == 0:

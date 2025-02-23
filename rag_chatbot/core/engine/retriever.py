@@ -18,6 +18,8 @@ from llama_index.core import Settings, VectorStoreIndex
 from ..prompt import get_query_gen_prompt
 from ...setting import RAGSettings
 
+from ..vector_store import LocalVectorStore
+
 load_dotenv()
 
 
@@ -115,16 +117,17 @@ class LocalRetriever:
             verbose=True,
         )
 
-        bm25_retriever = BM25Retriever.from_defaults(
-            index=vector_index,
-            similarity_top_k=self._setting.retriever.similarity_top_k,
-            verbose=True,
-        )
+        # bm25_retriever = BM25Retriever.from_defaults(
+        #     index=vector_index,
+        #     similarity_top_k=self._setting.retriever.similarity_top_k,
+        #     verbose=True,
+        #     # language="rus",
+        # )
 
         # FUSION RETRIEVER
         if gen_query:
             hybrid_retriever = QueryFusionRetriever(
-                retrievers=[bm25_retriever, vector_retriever],
+                retrievers=[vector_retriever],
                 retriever_weights=self._setting.retriever.retriever_weights,
                 llm=llm,
                 query_gen_prompt=get_query_gen_prompt(),
@@ -135,7 +138,7 @@ class LocalRetriever:
             )
         else:
             hybrid_retriever = TwoStageRetriever(
-                retrievers=[bm25_retriever, vector_retriever],
+                retrievers=[vector_retriever],
                 retriever_weights=self._setting.retriever.retriever_weights,
                 llm=llm,
                 query_gen_prompt=None,
@@ -173,11 +176,13 @@ class LocalRetriever:
         self,
         nodes: List[BaseNode],
         llm: LLM | None = None,
+        vector_store=LocalVectorStore().setup(),
     ):
-        vector_index = VectorStoreIndex(nodes=nodes)
-        if len(nodes) > self._setting.retriever.top_k_rerank:
-            retriever = self._get_router_retriever(vector_index, llm)
-        else:
-            retriever = self._get_normal_retriever(vector_index, llm)
+        vector_index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
+        print(vector_index.docstore.docs.values())
+        # if len(nodes) > self._setting.retriever.top_k_rerank:
+        retriever = self._get_router_retriever(vector_index, llm)
+        # else:
+        #     retriever = self._get_normal_retriever(vector_index, llm)
 
         return retriever
