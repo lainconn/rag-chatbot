@@ -17,16 +17,14 @@ class LocalDataIngestion:
         setting: RAGSettings | None = None,
     ) -> None:
         self._setting = setting or RAGSettings()
-        self._node_store = LocalVectorStore().setup()
-        self._ingested_file = set()
+        self._vector_store = LocalVectorStore().setup()
+        self._ingested_ids = set()
 
     def store_nodes(
         self,
         input_files: list[str],
         embed_model: Any | None = None,
     ) -> List[BaseNode]:
-        if len(input_files) == 0:
-            return []
         splitter = SentenceSplitter.from_defaults(
             chunk_size=self._setting.ingestion.chunk_size,
             chunk_overlap=self._setting.ingestion.chunk_overlap,
@@ -36,12 +34,12 @@ class LocalDataIngestion:
         Settings.embed_model = embed_model or Settings.embed_model
         for input_file in tqdm(input_files):
             file_name = input_file.strip().split("/")[-1]
-            node_ids = self._node_store.client.get(where={"file_name": file_name})[
+            node_ids = self._vector_store.client.get(where={"file_name": file_name})[
                 "ids"
             ]
-            self._ingested_file.update(node_ids)
+            self._ingested_ids.update(node_ids)
             if node_ids:
-                return self._node_store.get_nodes(node_ids=node_ids)
+                return self._vector_store.get_nodes(node_ids=node_ids)
             else:
                 elements = partition(
                     filename=input_file,
@@ -63,19 +61,26 @@ class LocalDataIngestion:
 
                 nodes = splitter([document], show_progress=True)
                 nodes = Settings.embed_model(nodes, show_progress=True)
-                node_ids = self._node_store.add(nodes)
-                self._ingested_file.update(node_ids)
-        return self._node_store.get_nodes(node_ids=node_ids)
+                node_ids = self._vector_store.add(nodes)
+                self._ingested_ids.update(node_ids)
+        return self._vector_store.get_nodes(node_ids=node_ids)
 
     def reset(self):
-        print(len(self._ingested_file))
-        return self._node_store.delete_nodes(node_ids=list(self._ingested_file))
+        return self._vector_store.delete_nodes(node_ids=list(self._ingested_ids))
 
     def check_nodes_exist(self):
-        return len(self._ingested_file) > 0
+        return len(self._ingested_ids) > 0
 
     def get_all_nodes(self):
-        return self._node_store.get_nodes()
+        return self._vector_store.get_nodes(
+            node_ids=self._vector_store.client.get()["ids"]
+        )
 
     def get_ingested_nodes(self):
-        return self._node_store.get_nodes(node_ids=list(self._ingested_file))
+        try:
+            return self._vector_store.get_nodes(node_ids=list(self._ingested_ids))
+        except:
+            return []
+
+    def get_vector_store(self):
+        return self._vector_store
