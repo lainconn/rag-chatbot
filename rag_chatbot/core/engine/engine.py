@@ -2,6 +2,7 @@ from llama_index.core.chat_engine import CondensePlusContextChatEngine, SimpleCh
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core.llms.llm import LLM
 from llama_index.core.schema import BaseNode
+from llama_index.core import StorageContext
 from typing import List
 from .retriever import LocalRetriever
 from ...setting import RAGSettings
@@ -20,6 +21,7 @@ class LocalChatEngine:
         self,
         llm: LLM,
         nodes: List[BaseNode],
+        storage_context: StorageContext | None = None,
     ) -> CondensePlusContextChatEngine | SimpleChatEngine:
 
         # Normal chat engine
@@ -33,7 +35,7 @@ class LocalChatEngine:
 
         # Chat engine with documents
         retriever = self._retriever.get_retrievers(
-            llm=llm, nodes=nodes, storage_context=self._storage_context
+            llm=llm, nodes=nodes, storage_context=storage_context
         )
         return CondensePlusContextChatEngine.from_defaults(
             retriever=retriever,

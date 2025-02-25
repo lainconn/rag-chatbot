@@ -83,6 +83,7 @@ class LocalRAGPipeline:
         self._query_engine = self._engine.set_engine(
             llm=self._default_model,
             nodes=self._ingestion.get_ingested_nodes(),
+            storage_context=self._ingestion.get_storage_context(),
         )
 
     def get_history(self, chatbot: list[list[str]]):

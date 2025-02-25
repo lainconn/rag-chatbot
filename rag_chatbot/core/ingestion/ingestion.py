@@ -20,13 +20,14 @@ class LocalDataIngestion:
         self._setting = setting or RAGSettings()
         self._vector_store = LocalVectorStore().setup()
         self._document_store = SimpleDocumentStore()
-        # self._ingested_file = set()
+        self._storage_context = StorageContext
+        self._doc_id = []
 
     def store_nodes(
         self,
         input_files: list[str],
         embed_model: Any | None = None,
-    ) -> StorageContext:
+    ) -> List[BaseNode]:
         if len(input_files) == 0:
             return []
         splitter = SentenceSplitter.from_defaults(
@@ -68,10 +69,7 @@ class LocalDataIngestion:
             self._document_store.add_documents(nodes)
             # node_ids = self._node_store.add(nodes)
             # self._ingested_file.update(node_ids)
-        return StorageContext.from_defaults(
-            docstore=self._document_store, vector_store=self._vector_store
-        )
-        # return self._node_store.get_nodes(node_ids=node_ids)
+        return []
 
     def reset(self):
         return []
@@ -79,11 +77,15 @@ class LocalDataIngestion:
 
     def check_nodes_exist(self):
         return len(self._document_store.docs.values()) > 0
-        # return len(self._ingested_file) > 0
 
     def get_all_nodes(self):
-        return []
-        # return self._node_store.get_nodes()
+        return self._document_store.docs.values()
 
     def get_ingested_nodes(self):
-        return []
+        return list(self._document_store.docs.values())
+
+    def get_storage_context(self):
+        return self._storage_context.from_defaults(
+            vector_store=self._vector_store,
+            docstore=self._document_store,
+        )
