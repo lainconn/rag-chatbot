@@ -97,7 +97,7 @@ class LocalChatbotUI:
         self._variant = "panel"
         self._llm_response = LLMResponse()
 
-    def _get_respone(
+    def _get_response(
         self,
         chat_mode: str,
         message: dict[str, str],
@@ -343,7 +343,7 @@ class LocalChatbotUI:
                                         ".pdf",
                                         ".csv",
                                         ".docx",
-                                        "xlsx",
+                                        ".xlsx",
                                     ],
                                     file_count="multiple",
                                     min_width=20,
@@ -376,7 +376,13 @@ class LocalChatbotUI:
                             message = gr.MultimodalTextbox(
                                 value=DefaultElement.DEFAULT_MESSAGE,
                                 placeholder="Enter you message:",
-                                file_types=[".txt", ".pdf", ".csv"],
+                                file_types=[
+                                    ".txt",
+                                    ".pdf",
+                                    ".csv",
+                                    ".docx",
+                                    ".xlsx",
+                                ],
                                 show_label=False,
                                 scale=6,
                                 lines=1,
@@ -440,7 +446,7 @@ class LocalChatbotUI:
             message.submit(
                 self._upload_document, inputs=[documents, message], outputs=[documents]
             ).then(
-                self._get_respone,
+                self._get_response,
                 inputs=[chat_mode, message, chatbot],
                 outputs=[message, chatbot, status],
             )
