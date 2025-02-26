@@ -456,7 +456,8 @@ class LocalChatbotUI:
                 inputs=[model],
                 outputs=[pull_btn, cancel_btn, status],
             )
-            documents.change(self._pull_embed_model, inputs=[], outputs=[]).then(
+            # change(self._pull_embed_model, inputs=[], outputs=[]).
+            documents.change(
                 self._processing_document,
                 inputs=[documents],
                 outputs=[system_prompt, status],
