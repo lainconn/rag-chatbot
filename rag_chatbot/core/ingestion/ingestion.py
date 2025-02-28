@@ -25,6 +25,8 @@ class LocalDataIngestion:
         input_files: list[str],
         embed_model: Any | None = None,
     ) -> List[BaseNode]:
+        if input_files in [None, []]:
+            return []
         splitter = SentenceSplitter.from_defaults(
             chunk_size=self._setting.ingestion.chunk_size,
             chunk_overlap=self._setting.ingestion.chunk_overlap,
