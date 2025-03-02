@@ -121,7 +121,6 @@ class LocalRetriever:
             nodes=nodes,
             similarity_top_k=self._setting.retriever.similarity_top_k,
             verbose=True,
-            # language="rus",
         )
 
         # FUSION RETRIEVER
