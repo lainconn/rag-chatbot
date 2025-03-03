@@ -32,7 +32,7 @@ class TwoStageRetriever(QueryFusionRetriever):
         mode: FUSION_MODES = FUSION_MODES.SIMPLE,
         similarity_top_k: int = ...,
         num_queries: int = 4,
-        use_async: bool = True,
+        use_async: bool = False,
         verbose: bool = False,
         callback_manager: CallbackManager | None = None,
         objects: List[IndexNode] | None = None,
@@ -63,7 +63,7 @@ class TwoStageRetriever(QueryFusionRetriever):
         queries: List[QueryBundle] = [query_bundle]
         if self.num_queries > 1:
             queries.extend(self._get_queries(query_bundle.query_str))
-
+        # TODO: find a way to use async calls to chromadb, currently only sync calls are supported
         if self.use_async:
             results = self._run_nested_async_queries(queries)
         else:
@@ -126,7 +126,7 @@ class LocalRetriever:
         # FUSION RETRIEVER
         if gen_query:
             hybrid_retriever = QueryFusionRetriever(
-                retrievers=[bm25_retriever, vector_retriever],
+                retrievers=[vector_retriever, bm25_retriever],
                 retriever_weights=self._setting.retriever.retriever_weights,
                 llm=llm,
                 query_gen_prompt=get_query_gen_prompt(),
@@ -137,7 +137,7 @@ class LocalRetriever:
             )
         else:
             hybrid_retriever = TwoStageRetriever(
-                retrievers=[bm25_retriever, vector_retriever],
+                retrievers=[vector_retriever, bm25_retriever],
                 retriever_weights=self._setting.retriever.retriever_weights,
                 llm=llm,
                 query_gen_prompt=None,
@@ -183,8 +183,10 @@ class LocalRetriever:
         llm: LLM | None = None,
     ):
         vector_index = VectorStoreIndex.from_vector_store(
-            vector_store=vector_store, embed_model=Settings.embed_model
+            vector_store=vector_store,
+            embed_model=Settings.embed_model,
         )
+
         if len(nodes) > self._setting.retriever.top_k_rerank:
             retriever = self._get_router_retriever(vector_index, nodes, llm)
         else:
