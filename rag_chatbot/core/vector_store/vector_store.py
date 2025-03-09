@@ -1,31 +1,28 @@
 import chromadb
 from llama_index.vector_stores.chroma import ChromaVectorStore
-from llama_index.core import VectorStoreIndex
+from pydantic import BaseModel
+from typing import Any
 from dotenv import load_dotenv
 from ...setting import RAGSettings
 
 load_dotenv()
 
 
-class LocalVectorStore:
-    def __init__(self) -> None:
-        pass
+class LocalVectorStore(BaseModel):
 
-    def setup(
-        self,
-        host: str = "host.docker.internal",
-        setting: RAGSettings | None = None,
-    ):
-        self._setting = setting or RAGSettings()
-        chroma_client = chromadb.HttpClient(host=host, port=self._setting.storage.port)
+    vector_store: Any = None
+    _host: str = "host.docker.internal"
+    _setting: RAGSettings | None = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._setting = self._setting or RAGSettings()
+        self.vector_store = self.setup(self._host, self._setting)
+
+    def setup(self, host, setting):
+        chroma_client = chromadb.HttpClient(host=host, port=setting.storage.port)
         chroma_collection = chroma_client.get_or_create_collection(
-            self._setting.storage.collection_name
+            setting.storage.collection_name
         )
         vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
         return vector_store
-
-    def get_index(self, nodes):
-        if len(nodes) == 0:
-            return None
-        index = VectorStoreIndex(nodes=nodes)
-        return index

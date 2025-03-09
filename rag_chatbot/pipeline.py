@@ -20,7 +20,7 @@ class LocalRAGPipeline:
         self._default_model = LocalRAGModel.set(self._model_name, host=host)
         self._query_engine = None
         self._ingestion = LocalDataIngestion()
-        self._vector_store = LocalVectorStore()
+        self._vector_store = LocalVectorStore().vector_store
         Settings.llm = LocalRAGModel.set(host=host)
         Settings.embed_model = LocalEmbedding.set(host=host)
 
@@ -83,7 +83,7 @@ class LocalRAGPipeline:
         self._query_engine = self._engine.set_engine(
             llm=self._default_model,
             nodes=self._ingestion.get_ingested_nodes(),
-            vector_store=self._ingestion.get_vector_store(),
+            vector_store=self._vector_store,
         )
 
     def get_history(self, chatbot: list[list[str]]):
