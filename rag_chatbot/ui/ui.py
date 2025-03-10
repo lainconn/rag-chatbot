@@ -19,18 +19,20 @@ class DefaultElement:
     DEFAULT_HISTORY: ClassVar[list] = []
     DEFAULT_DOCUMENT: ClassVar[list] = []
 
-    HELLO_MESSAGE: str = "Hi 👋, how can I help you today?"
-    SET_MODEL_MESSAGE: str = "You need to choose LLM model 🤖 first!"
-    EMPTY_MESSAGE: str = "You need to enter your message!"
-    DEFAULT_STATUS: str = "Ready!"
-    CONFIRM_PULL_MODEL_STATUS: str = "Confirm Pull Model!"
-    PULL_MODEL_SUCCESS_STATUS: str = "Pulling model 🤖 completed!"
-    PULL_MODEL_FAIL_STATUS: str = "Pulling model 🤖 failed!"
-    MODEL_NOT_EXIST_STATUS: str = "Model doesn't exist!"
-    PROCESS_DOCUMENT_SUCCESS_STATUS: str = "Processing documents 📄 completed!"
-    PROCESS_DOCUMENT_EMPTY_STATUS: str = "Empty documents!"
-    ANSWERING_STATUS: str = "Answering!"
-    COMPLETED_STATUS: str = "Completed!"
+    HELLO_MESSAGE: str = """Приветствую!
+    Я могу проконсультировать вас в вопросах получения кредита, \
+    совершения операций с банковскими картами, условиям по сбер. картам и расчетному обслуживанию физ. лиц."""
+    SET_MODEL_MESSAGE: str = "Пожалуйста, выберите модель из списка!"
+    EMPTY_MESSAGE: str = "Пожалуйста, введите сообщение!"
+    DEFAULT_STATUS: str = "Готово!"
+    CONFIRM_PULL_MODEL_STATUS: str = "Успешно!"
+    PULL_MODEL_SUCCESS_STATUS: str = "Модель была успешно загружена!"
+    PULL_MODEL_FAIL_STATUS: str = "Ошибка загрузки модели!"
+    MODEL_NOT_EXIST_STATUS: str = "Такой модели не существует!"
+    PROCESS_DOCUMENT_SUCCESS_STATUS: str = "Обработка документов!"
+    PROCESS_DOCUMENT_EMPTY_STATUS: str = "Пустой документ(ы)!"
+    ANSWERING_STATUS: str = "Подождите!"
+    COMPLETED_STATUS: str = "Завершено!"
 
 
 class LLMResponse:
@@ -140,15 +142,15 @@ class LocalChatbotUI:
         ):
             response = self._pipeline.pull_model(model)
             if response.status_code == 200:
-                gr.Info(f"Pulling {model}!")
+                gr.Info(f"Загрузка {model}!")
                 for data in response.iter_lines(chunk_size=1):
                     data = json.loads(data)
                     if "completed" in data.keys() and "total" in data.keys():
-                        progress(data["completed"] / data["total"], desc="Downloading")
+                        progress(data["completed"] / data["total"], desc="Загрузка")
                     else:
                         progress(0.0)
             else:
-                gr.Warning(f"Model {model} doesn't exist!")
+                gr.Warning(f"Модель {model} не существует!")
                 return (
                     DefaultElement.DEFAULT_MESSAGE,
                     DefaultElement.DEFAULT_HISTORY,
@@ -167,15 +169,15 @@ class LocalChatbotUI:
         if not (self._pipeline.check_exist_embed()):
             response = self._pipeline.pull_embed_model()
             if response.status_code == 200:
-                gr.Info(f"Pulling embedding model completed!")
+                gr.Info(f"Загрузка выполнена!")
                 for data in response.iter_lines(chunk_size=1):
                     data = json.loads(data)
                     if "completed" in data.keys() and "total" in data.keys():
-                        progress(data["completed"] / data["total"], desc="Downloading")
+                        progress(data["completed"] / data["total"], desc="Загрузка")
                     else:
                         progress(0.0)
             else:
-                gr.Warning(f"Embedding model doesn't exist!")
+                gr.Warning(f"Ошибка!")
                 return (
                     DefaultElement.DEFAULT_MESSAGE,
                     DefaultElement.DEFAULT_HISTORY,
@@ -190,7 +192,7 @@ class LocalChatbotUI:
             self._pipeline.set_model_name(model)
             self._pipeline.set_model()
             self._pipeline.set_engine()
-            gr.Info(f"Change model to {model}!")
+            gr.Info(f"Изменение текущей модели на {model}!")
         return DefaultElement.DEFAULT_STATUS
 
     def _upload_document(self, document: list[str], list_files: list[str] | dict):
@@ -211,7 +213,7 @@ class LocalChatbotUI:
 
     def _reset_document(self):
         self._pipeline.reset_documents()
-        gr.Info("Reset all documents!")
+        gr.Info("Очистка документов выполнена успешно!")
         return (
             DefaultElement.DEFAULT_DOCUMENT,
             gr.update(visible=False),
@@ -236,18 +238,18 @@ class LocalChatbotUI:
         else:
             self._pipeline.store_nodes(input_files=document)
         self._pipeline.set_chat_mode()
-        gr.Info("Processing Completed!")
+        gr.Info("Обработка прошла успешно!")
         return (self._pipeline.get_system_prompt(), DefaultElement.COMPLETED_STATUS)
 
     def _change_system_prompt(self, sys_prompt: str):
         self._pipeline.set_system_prompt(sys_prompt)
         self._pipeline.set_chat_mode()
-        gr.Info("System prompt updated!")
+        gr.Info("Системный промпт успешно изменен!")
 
     def _change_language(self, language: str):
         self._pipeline.set_language(language)
         self._pipeline.set_chat_mode()
-        gr.Info(f"Change language to {language}")
+        gr.Info(f"Текущей язык успешно изменен на {language}")
 
     def _undo_chat(self, history: list[list[str, str]]):
         if len(history) > 0:
@@ -257,7 +259,7 @@ class LocalChatbotUI:
 
     def _reset_chat(self):
         self._pipeline.reset_conversation()
-        gr.Info("Reset chat!")
+        gr.Info("Среда успешно сброшена!")
         return (
             DefaultElement.DEFAULT_MESSAGE,
             DefaultElement.DEFAULT_HISTORY,
@@ -267,7 +269,7 @@ class LocalChatbotUI:
 
     def _clear_chat(self):
         self._pipeline.clear_conversation()
-        gr.Info("Clear chat!")
+        gr.Info("История успешна очищена!")
         return (
             DefaultElement.DEFAULT_MESSAGE,
             DefaultElement.DEFAULT_HISTORY,
@@ -276,7 +278,7 @@ class LocalChatbotUI:
 
     def _show_hide_setting(self, state):
         state = not state
-        label = "Hide Setting" if state else "Show Setting"
+        label = "Скрыть настройки" if state else "Показать настройки"
         return (label, gr.update(visible=state), state)
 
     def _welcome(self):
@@ -289,8 +291,8 @@ class LocalChatbotUI:
             js=JS_LIGHT_THEME,
             css=CSS,
         ) as demo:
-            gr.Markdown("## Local RAG Chatbot 🤖")
-            with gr.Tab("Interface"):
+            gr.Markdown("## Демонстрационная версия")
+            with gr.Tab("Главная"):
                 sidebar_state = gr.State(True)
                 with gr.Row(variant=self._variant, equal_height=False):
                     with gr.Column(
@@ -298,16 +300,16 @@ class LocalChatbotUI:
                     ) as setting:
                         with gr.Column():
                             status = gr.Textbox(
-                                label="Status", value="Ready!", interactive=False
+                                label="Статус", value="Готово!", interactive=False
                             )
                             language = gr.Radio(
-                                label="Language",
-                                choices=["rus"],
-                                value="rus",
+                                label="Язык",
+                                choices=["Русский"],
+                                value="Русский",
                                 interactive=True,
                             )
                             model = gr.Dropdown(
-                                label="Choose Model:",
+                                label="Выберите модель:",
                                 choices=[
                                     "llama3.1",
                                     "llama3.2",
@@ -320,14 +322,14 @@ class LocalChatbotUI:
                             )
                             with gr.Row():
                                 pull_btn = gr.Button(
-                                    value="Pull Model", visible=False, min_width=50
+                                    value="Загрузить", visible=False, min_width=50
                                 )
                                 cancel_btn = gr.Button(
-                                    value="Cancel", visible=False, min_width=50
+                                    value="Отменить", visible=False, min_width=50
                                 )
 
                             documents = gr.Files(
-                                label="Add Documents",
+                                label="Добавить документы",
                                 value=[],
                                 file_types=[".txt", ".pdf", ".csv", ".docx", "xlsx"],
                                 file_count="multiple",
@@ -336,7 +338,7 @@ class LocalChatbotUI:
                             )
                             with gr.Row():
                                 upload_doc_btn = gr.UploadButton(
-                                    label="Upload",
+                                    label="Загрузить",
                                     value=[],
                                     file_types=[
                                         ".txt",
@@ -350,7 +352,7 @@ class LocalChatbotUI:
                                     visible=False,
                                 )
                                 reset_doc_btn = gr.Button(
-                                    "Reset", min_width=20, visible=False
+                                    "Очистить", min_width=20, visible=False
                                 )
 
                     with gr.Column(scale=30, variant=self._variant):
@@ -375,7 +377,7 @@ class LocalChatbotUI:
                             )
                             message = gr.MultimodalTextbox(
                                 value=DefaultElement.DEFAULT_MESSAGE,
-                                placeholder="Enter you message:",
+                                placeholder="Введите сообщение:",
                                 file_types=[
                                     ".txt",
                                     ".pdf",
@@ -390,29 +392,29 @@ class LocalChatbotUI:
                         with gr.Row(variant=self._variant):
                             ui_btn = gr.Button(
                                 value=(
-                                    "Hide Setting"
+                                    "Скрыть настройки"
                                     if sidebar_state.value
-                                    else "Show Setting"
+                                    else "Показать настройки"
                                 ),
                                 min_width=20,
                             )
-                            undo_btn = gr.Button(value="Undo", min_width=20)
-                            clear_btn = gr.Button(value="Clear", min_width=20)
-                            reset_btn = gr.Button(value="Reset", min_width=20)
+                            undo_btn = gr.Button(value="Отменить", min_width=20)
+                            clear_btn = gr.Button(value="Очистить", min_width=20)
+                            reset_btn = gr.Button(value="Сброс", min_width=20)
 
-            with gr.Tab("Setting"):
+            with gr.Tab("Промпт"):
                 with gr.Row(variant=self._variant, equal_height=False):
                     with gr.Column():
                         system_prompt = gr.Textbox(
-                            label="System Prompt",
+                            label="Системный промпт",
                             value=self._pipeline.get_system_prompt(),
                             interactive=True,
                             lines=10,
                             max_lines=50,
                         )
-                        sys_prompt_btn = gr.Button(value="Set System Prompt")
+                        sys_prompt_btn = gr.Button(value="Добавить системный промпт")
 
-            with gr.Tab("Output"):
+            with gr.Tab("Логи"):
                 with gr.Row(variant=self._variant):
                     log = gr.Code(
                         label="", language="markdown", interactive=False, lines=30
