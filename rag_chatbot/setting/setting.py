@@ -13,7 +13,7 @@ class OllamaSettings(BaseModel):
     request_timeout: float = Field(default=300, description="Request timeout")
     port: int = Field(default=11434, description="Port number")
     context_window: int = Field(default=8000, description="Context window size")
-    temperature: float = Field(default=0.1, description="Temperature")
+    temperature: float = Field(default=0.35, description="Temperature")
     chat_token_limit: int = Field(default=4000, description="Chat memory limit")
 
 
