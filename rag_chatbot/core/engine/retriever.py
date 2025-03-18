@@ -129,6 +129,7 @@ class LocalRetriever:
                 retrievers=[vector_retriever, bm25_retriever],
                 retriever_weights=self._setting.retriever.retriever_weights,
                 llm=llm,
+                use_async=False,
                 query_gen_prompt=get_query_gen_prompt(),
                 similarity_top_k=self._setting.retriever.top_k_rerank,
                 num_queries=self._setting.retriever.num_queries,
