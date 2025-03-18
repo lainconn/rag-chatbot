@@ -313,8 +313,8 @@ class LocalChatbotUI:
                                 choices=[
                                     "llama3.1",
                                     "llama3.2",
-                                    "deepseek-r1:14b",
-                                    "phi4",
+                                    "gemma3:4b",
+                                    "gemma3:12b",
                                 ],
                                 value=None,
                                 interactive=True,
