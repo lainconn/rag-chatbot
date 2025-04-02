@@ -3,7 +3,7 @@ from typing import List
 
 
 class OllamaSettings(BaseModel):
-    llm: str = Field(default="llama3:8b-instruct-q8_0", description="LLM model")
+    llm: str = Field(default="llama3.1:latest", description="LLM model")
     keep_alive: str = Field(default="-1", description="Keep alive time for the server")
     tfs_z: float = Field(default=1.0, description="TFS normalization factor")
     top_k: int = Field(default=40, description="Top k sampling")
@@ -13,7 +13,7 @@ class OllamaSettings(BaseModel):
     request_timeout: float = Field(default=300, description="Request timeout")
     port: int = Field(default=11434, description="Port number")
     context_window: int = Field(default=8000, description="Context window size")
-    temperature: float = Field(default=0.35, description="Temperature")
+    temperature: float = Field(default=0.5, description="Temperature")
     chat_token_limit: int = Field(default=4000, description="Chat memory limit")
 
 
@@ -40,7 +40,7 @@ class IngestionSettings(BaseModel):
     chunking_regex: str = Field(
         default="[^,.;。？！]+[,.;。？！]?", description="Chunking regex"
     )
-    paragraph_sep: str = Field(default="\n \n", description="Paragraph separator")
+    paragraph_sep: str = Field(default="\n\n", description="Paragraph separator")
     # num_workers: int = Field(default=0, description="Number of workers")
 
 
