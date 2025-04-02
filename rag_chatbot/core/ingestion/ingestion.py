@@ -1,11 +1,13 @@
 from llama_index.core import Document, Settings
 from llama_index.core.schema import BaseNode
 from llama_index.core.node_parser import SentenceSplitter
+from llama_index.core.program import LLMTextCompletionProgram
 from dotenv import load_dotenv
 from typing import Any, List
 from tqdm import tqdm
 from ...setting import RAGSettings
 from ..vector_store import LocalVectorStore
+from ..prompt import get_so_prompt, get_pydantic
 from unstructured.partition.auto import partition
 
 load_dotenv()
@@ -19,6 +21,7 @@ class LocalDataIngestion:
         self._setting = setting or RAGSettings()
         self._vector_store = LocalVectorStore().vector_store
         self._ingested_ids = set()
+        self._customizer = get_pydantic().customize
 
     def store_nodes(
         self,
@@ -27,12 +30,18 @@ class LocalDataIngestion:
     ) -> None:
         if input_files in [None, []]:
             return []
-        # splitter = SentenceSplitter.from_defaults(
-        #     chunk_size=self._setting.ingestion.chunk_size,
-        #     chunk_overlap=self._setting.ingestion.chunk_overlap,
-        #     paragraph_separator=self._setting.ingestion.paragraph_sep,
-        #     secondary_chunking_regex=self._setting.ingestion.chunking_regex,
-        # )
+        splitter = SentenceSplitter.from_defaults(
+            chunk_size=self._setting.ingestion.chunk_size,
+            chunk_overlap=self._setting.ingestion.chunk_overlap,
+            paragraph_separator=self._setting.ingestion.paragraph_sep,
+            secondary_chunking_regex=self._setting.ingestion.chunking_regex,
+        )
+        program = LLMTextCompletionProgram.from_defaults(
+            output_cls=get_pydantic(),
+            llm=Settings.llm,
+            prompt_template_str=get_so_prompt(),
+            verbose=True,
+        )
         Settings.embed_model = embed_model or Settings.embed_model
         for input_file in tqdm(input_files):
             file_name = input_file.strip().split("/")[-1]
@@ -47,37 +56,34 @@ class LocalDataIngestion:
                     languages=["rus", "eng"],
                     strategy="hi_res",
                     skip_infer_table_types=["jpg", "png", "heic"],
-                    chunking_strategy="basic",
                 )
 
-                # text = " "
-                # for element in elements:
-                #     text += "\n\n" + element.text
+                text = " "
+                for element in elements:
+                    if "Table" in str(type(element)):
+                        print("Started processing documents!")
+                        output = program(table=element.metadata.text_as_html)
+                        print("Ended processing documents!")
+                        output = self._customizer(output)
+                        text += output + "\n\n"
+                    else:
+                        text += element.text + "\n\n"
 
-                # document = Document(
-                #     text=text,
-                #     metadata={
-                #         "file_name": file_name,
-                #     },
-                # )
+                document = Document(
+                    text=text,
+                    metadata={
+                        "file_name": file_name,
+                    },
+                )
 
-                # nodes = splitter([document], show_progress=True)
-                nodes = [
-                    Document(
-                        text=node.text,
-                        metadata={
-                            "file_name": file_name,
-                        },
-                    )
-                    for node in elements
-                ]
+                nodes = splitter([document], show_progress=True)
                 nodes = Settings.embed_model(nodes, show_progress=True)
                 node_ids = self._vector_store.add(nodes)
                 self._ingested_ids.update(node_ids)
         return None
 
     def reset(self):
-        return self._vector_store.delete_nodes(node_ids=list(self._ingested_ids))
+        return self._vector_store.clear()
 
     def check_nodes_exist(self):
         return len(self._ingested_ids) > 0
