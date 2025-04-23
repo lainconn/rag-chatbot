@@ -101,5 +101,6 @@ class LocalRAGPipeline:
             history = self.get_history(chatbot)
             return self._query_engine.stream_chat(message, history)
         else:
-            self._query_engine.reset()
-            return self._query_engine.stream_chat(message)
+            # self._query_engine.reset()
+            history = self.get_history(chatbot)
+            return self._query_engine.stream_chat(message, history)
