@@ -8,7 +8,10 @@ from tqdm import tqdm
 from ...setting import RAGSettings
 from ..vector_store import LocalVectorStore
 from ..prompt import get_so_prompt, get_pydantic
-from unstructured.partition.auto import partition
+import json
+from pathlib import Path
+
+# from unstructured.partition.auto import partition
 
 load_dotenv()
 
@@ -36,12 +39,12 @@ class LocalDataIngestion:
             paragraph_separator=self._setting.ingestion.paragraph_sep,
             secondary_chunking_regex=self._setting.ingestion.chunking_regex,
         )
-        program = LLMTextCompletionProgram.from_defaults(
-            output_cls=get_pydantic(),
-            llm=Settings.llm,
-            prompt_template_str=get_so_prompt(),
-            verbose=True,
-        )
+        # program = LLMTextCompletionProgram.from_defaults(
+        #     output_cls=get_pydantic(),
+        #     llm=Settings.llm,
+        #     prompt_template_str=get_so_prompt(),
+        #     verbose=True,
+        # )
         Settings.embed_model = embed_model or Settings.embed_model
         for input_file in tqdm(input_files):
             file_name = input_file.strip().split("/")[-1]
@@ -51,35 +54,56 @@ class LocalDataIngestion:
             if node_ids:
                 self._ingested_ids.update(node_ids)
             else:
-                elements = partition(
-                    filename=input_file,
-                    languages=["rus", "eng"],
-                    strategy="hi_res",
-                    skip_infer_table_types=["jpg", "png", "heic"],
-                )
+                with open(input_file, "r", encoding="utf-8") as file:
+                    elements = json.load(file)
+                # elements = partition(
+                #     filename=input_file,
+                #     languages=["rus", "eng"],
+                #     strategy="hi_res",
+                #     skip_infer_table_types=["jpg", "png", "heic"],
+                # )
 
-                text = " "
-                for element in elements:
-                    if "Table" in str(type(element)):
-                        print("Started processing documents!")
-                        output = program(table=element.metadata.text_as_html)
-                        print("Ended processing documents!")
-                        output = self._customizer(output)
-                        text += output + "\n\n"
-                    else:
-                        text += element.text + "\n\n"
+                try:
+                    for key_for_lists, inner_dict in elements.items():
+                        for i in range(len(inner_dict.values())):
+                            text = f"{key_for_lists}: "
+                            for key, value_list in inner_dict.items():
+                                text += f"{key}: {value_list[i]}; "
 
-                document = Document(
-                    text=text,
-                    metadata={
-                        "file_name": file_name,
-                    },
-                )
+                            print(text.strip())
+                            document = Document(
+                                text=text,
+                                metadata={
+                                    "file_name": file_name,
+                                },
+                            )
 
-                nodes = splitter([document], show_progress=True)
-                nodes = Settings.embed_model(nodes, show_progress=True)
-                node_ids = self._vector_store.add(nodes)
-                self._ingested_ids.update(node_ids)
+                            nodes = splitter([document], show_progress=True)
+                            nodes = Settings.embed_model(nodes, show_progress=True)
+                            node_ids = self._vector_store.add(nodes)
+                            self._ingested_ids.update(node_ids)
+                except:
+                    max_length = max(
+                        len(value_list) for value_list in elements.values()
+                    )
+
+                    for i in range(max_length):
+                        text = ""
+                        for key, value_list in elements.items():
+                            if i < len(value_list):
+                                text += f"{key}: {value_list[i]}; "
+
+                        document = Document(
+                            text=text,
+                            metadata={
+                                "file_name": file_name,
+                            },
+                        )
+
+                        nodes = splitter([document], show_progress=True)
+                        nodes = Settings.embed_model(nodes, show_progress=True)
+                        node_ids = self._vector_store.add(nodes)
+                        self._ingested_ids.update(node_ids)
         return None
 
     def reset(self):

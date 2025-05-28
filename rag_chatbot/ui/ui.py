@@ -331,7 +331,14 @@ class LocalChatbotUI:
                             documents = gr.Files(
                                 label="Добавить документы",
                                 value=[],
-                                file_types=[".txt", ".pdf", ".csv", ".docx", "xlsx"],
+                                file_types=[
+                                    ".txt",
+                                    ".pdf",
+                                    ".csv",
+                                    ".docx",
+                                    "xlsx",
+                                    "json",
+                                ],
                                 file_count="multiple",
                                 height=150,
                                 interactive=True,
