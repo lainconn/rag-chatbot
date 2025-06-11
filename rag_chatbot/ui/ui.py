@@ -315,6 +315,7 @@ class LocalChatbotUI:
                                     "llama3.2",
                                     "gemma3:4b",
                                     "gemma3:12b",
+                                    "qwen3:8b",
                                 ],
                                 value=None,
                                 interactive=True,
