@@ -3,3 +3,13 @@ data/
 assets/
 .vscode/
 *.ipynb
+Dockerfile
+docker-compose.yml
+.dockerignore
+.gitignore
+.github/
+build/
+notebooks/
+LICENSE
+Makefile
+*.lock

@@ -5,6 +5,8 @@ services:
     depends_on:
       ollama:
         condition: service_started
+      chromadb:
+        condition: service_started
     ports:
       - 7860:7860
       - 5678:5678
@@ -18,25 +20,21 @@ services:
     image: chromadb/chroma:latest
     environment:
       - ANONYMIZED_TELEMETRY=False
-    ports:
-      - 8000:8000
     volumes:
-      - ./data/chroma:/chroma/chroma
+      - ./data/chroma:/data
     networks:
       - local_network
   ollama:
     container_name: ollama
     image: ollama/ollama:latest
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [compute, utility]
-    runtime: nvidia
-    ports:
-      - 11434:11434
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [compute, utility]
+    # runtime: nvidia
     volumes:
       - ollama:/root/.ollama
     networks:
