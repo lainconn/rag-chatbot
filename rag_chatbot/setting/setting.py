@@ -45,12 +45,12 @@ class IngestionSettings(BaseModel):
 
 
 class StorageSettings(BaseModel):
-    persist_dir_chroma: str = Field(
-        default="data/chroma", description="Chroma directory"
-    )
-    persist_dir_storage: str = Field(
-        default="data/storage", description="Storage directory"
-    )
+    # persist_dir_chroma: str = Field(
+    #     default="data/chroma", description="Chroma directory"
+    # )
+    # persist_dir_storage: str = Field(
+    #     default="data/storage", description="Storage directory"
+    # )
     collection_name: str = Field(default="collection", description="Collection name")
     port: int = Field(default=8000, description="Port number")
 

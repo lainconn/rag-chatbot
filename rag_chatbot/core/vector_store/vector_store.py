@@ -22,7 +22,7 @@ class LocalVectorStore(BaseModel):
     def _setup(self, host, setting):
         chroma_client = chromadb.HttpClient(host=host, port=setting.storage.port)
         chroma_collection = chroma_client.get_or_create_collection(
-            setting.storage.collection_name
+            name=setting.storage.collection_name
         )
         vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
         return vector_store
