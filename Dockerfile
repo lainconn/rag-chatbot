@@ -2,11 +2,12 @@ FROM python:3.12-slim-bookworm
 
 WORKDIR /code
 
-COPY . .
+COPY requirements.txt .
+
 
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir .
+    pip install --no-cache-dir -r requirements.txt
 
 RUN apt-get update && apt-get install -y \
     libmagic-dev \
@@ -14,6 +15,8 @@ RUN apt-get update && apt-get install -y \
     pandoc \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
+
+COPY rag_chatbot .
 
 EXPOSE 7860
 EXPOSE 5678

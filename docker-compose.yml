@@ -10,7 +10,7 @@ services:
     ports:
       - 7860:7860
       - 5678:5678
-    volumes:  
+    volumes:  # overwrites dockerfile [change for prod]
       - .:/code
     networks:
       - local_network
@@ -20,6 +20,8 @@ services:
     image: chromadb/chroma:latest
     environment:
       - ANONYMIZED_TELEMETRY=False
+    ports:
+      - 8000:8000
     volumes:
       - ./data/chroma:/data
     networks:
@@ -35,6 +37,8 @@ services:
     #           count: all
     #           capabilities: [compute, utility]
     # runtime: nvidia
+    ports:
+      - 11434:11434
     volumes:
       - ollama:/root/.ollama
     networks:

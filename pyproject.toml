@@ -1,8 +1,12 @@
 [tool.poetry]
+package-mode = false
 name = "rag-chatbot"
 version = "0.1.0"
-description = ""
-readme = "README.md"
+description = "Retrieval Augmented Generation application with Gradio frontend"
+authors = [
+    "Aleksey Strylchuk <none>"
+]
+
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -31,10 +35,11 @@ ruff = "^0.6.9"
 deptry = "^0.20.0"
 pytest = "^8.3.3"
 
+
 [tool.deptry.per_rule_ignores]
 DEP002 = ["sentence-transformers"]
 
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+# [build-system]
+# requires = ["poetry-core"]
+# build-backend = "poetry.core.masonry.api"
