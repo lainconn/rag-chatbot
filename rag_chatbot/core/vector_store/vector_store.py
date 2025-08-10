@@ -17,9 +17,9 @@ class LocalVectorStore(BaseModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._setting = self._setting or RAGSettings()
-        self.vector_store = self.setup(self._host, self._setting)
+        self.vector_store = self._setup(self._host, self._setting)
 
-    def setup(self, host, setting):
+    def _setup(self, host, setting):
         chroma_client = chromadb.HttpClient(host=host, port=setting.storage.port)
         chroma_collection = chroma_client.get_or_create_collection(
             setting.storage.collection_name

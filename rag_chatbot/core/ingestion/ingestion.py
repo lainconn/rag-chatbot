@@ -56,7 +56,6 @@ class LocalDataIngestion:
                 if file_name.split(".")[-1] == "json":
                     with open(input_file, "r", encoding="utf-8") as file:
                         elements = json.load(file)
-
                     try:
                         for key_for_lists, inner_dict in elements.items():
                             for i in range(len(inner_dict.values())):
