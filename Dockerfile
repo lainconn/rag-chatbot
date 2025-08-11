@@ -16,9 +16,9 @@ RUN apt-get update && apt-get install -y \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY rag_chatbot .
-
 EXPOSE 7860
 EXPOSE 5678
 
-CMD ["python3", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "-m", "rag_chatbot", "--host", "host.docker.internal"]
+CMD ["python3", "-Xfrozen_modules=off", \
+        "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", \
+        "-m", "rag_chatbot", "--host", "host.docker.internal"]
