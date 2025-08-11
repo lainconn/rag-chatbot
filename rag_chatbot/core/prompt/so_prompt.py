@@ -4,7 +4,7 @@ from typing import List
 
 
 def get_so_prompt():
-    return prompt_template_str
+    return PromptTemplate(prompt_template_str)
 
 
 def get_pydantic():
@@ -13,15 +13,8 @@ def get_pydantic():
 
 class Block(BaseModel):
 
-    header: List[str] = Field(
-        description="This block is used to store header information.\
-        For context: every table has a first 'header' row to define the name of different columns."
-    )
-    rows: List[List[str]] = Field(
-        description=(
-            "This block is used to store row-wise information.\
-        For context: every table has a few rows to store the information under specific columns."
-        )
+    classifier: str = Field(
+        description="This block is used to store the resulting category name."
     )
 
     def customize(self):
@@ -35,8 +28,30 @@ class Block(BaseModel):
 
 
 prompt_template_str = """\
-You are a table serialization agent.\n
-Your task is to create a set of contextually independent blocks of information based on the provided table and surrounding text.\n
-These blocks must be totally context-independent because they will be used as separate chunk to populate database.\
-Context:\n{table}
+You are a classification LLM. \n
+Your task is to classify the provided user query into the following categories. \n
+The categories:
+###
+    1. Открытие счетов.
+    2. Сервисное обслуживание текущих счетов.
+    3. Выдача наличных со счетов.
+    4. Прием наличных денежных средств на счета.
+    5. Зачисление денежных средств на счета.
+    6. Переводы со счетов.
+    7. Переводы в пределах Банка.
+    8. Переводы в иные банки Республики Беларусь.
+    9. Международные переводы.
+    10. Плановый платеж.
+    11. Предоставление выписок и справок.
+    12. Оформление дополнительных  завещательных  соглашения к договору по инициативе Клиента с согласия Банка.
+    13. Банковские сейфы ( ячейки)  - хранение ценностей.
+    14. Неподвижные счета.
+    15. Курьерская доставка.
+    16. Переводы по номеру мобильного телефона.	
+### \n
+The query:
+###
+{query}
+### \n
+Important! Your output should be a valid json.
 """

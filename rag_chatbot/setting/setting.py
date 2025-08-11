@@ -10,7 +10,7 @@ class OllamaSettings(BaseModel):
     top_p: float = Field(default=0.9, description="Top p sampling")
     repeat_last_n: int = Field(default=64, description="Repeat last n tokens")
     repeat_penalty: float = Field(default=1.1, description="Repeat penalty")
-    request_timeout: float = Field(default=300, description="Request timeout")
+    request_timeout: float = Field(default=600, description="Request timeout")
     port: int = Field(default=11434, description="Port number")
     context_window: int = Field(default=8000, description="Context window size")
     temperature: float = Field(default=0.1, description="Temperature")

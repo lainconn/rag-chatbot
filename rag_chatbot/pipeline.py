@@ -5,6 +5,8 @@ from .core import (
     LocalEmbedding,
     LocalVectorStore,
     get_system_prompt,
+    get_so_prompt,
+    get_pydantic,
 )
 from llama_index.core import Settings
 from llama_index.core.chat_engine.types import StreamingAgentChatResponse
@@ -15,8 +17,9 @@ class LocalRAGPipeline:
     def __init__(self, host: str = "host.docker.internal") -> None:
         self._host = host
         self._model_name = ""
+        self._category = None
         self._system_prompt = get_system_prompt(is_rag_prompt=False)
-        self._engine = LocalChatEngine(host=host)
+        self._engine = LocalChatEngine(host=host, category=self._category)
         self._default_model = LocalRAGModel.set(self._model_name, host=host)
         self._query_engine = None
         self._ingestion = LocalDataIngestion()
@@ -86,6 +89,19 @@ class LocalRAGPipeline:
             vector_store=self._vector_store,
         )
 
+    # Fix later
+    def get_category(self, message: str):
+        llm = Settings.llm
+        prompt = get_so_prompt()
+        schema = get_pydantic()
+        response = llm.stream_structured_predict(
+            schema,
+            prompt,
+            query=message,
+        )
+        for r in response:
+            print(r)
+
     def get_history(self, chatbot: list[list[str]]):
         history = []
         for chat in chatbot:
@@ -102,5 +118,7 @@ class LocalRAGPipeline:
             return self._query_engine.stream_chat(message, history)
         else:
             # self._query_engine.reset()
+            self._category = self.get_category(message)
+            print(self._category)
             history = self.get_history(chatbot)
             return self._query_engine.stream_chat(message, history)

@@ -337,8 +337,8 @@ class LocalChatbotUI:
                                     ".pdf",
                                     ".csv",
                                     ".docx",
-                                    "xlsx",
-                                    "json",
+                                    ".xlsx",
+                                    ".json",
                                 ],
                                 file_count="multiple",
                                 height=150,
@@ -430,9 +430,10 @@ class LocalChatbotUI:
                     demo.load(
                         self._logger.read_logs,
                         outputs=[log],
-                        every=1,
                         show_progress="hidden",
                     )
+                    log_timer = gr.Timer(1.0)
+                    log_timer.tick(self._logger.read_logs, outputs=[log])
 
             clear_btn.click(self._clear_chat, outputs=[message, chatbot, status])
             cancel_btn.click(
@@ -466,8 +467,11 @@ class LocalChatbotUI:
                 inputs=[model],
                 outputs=[pull_btn, cancel_btn, status],
             )
-            # change(self._pull_embed_model, inputs=[], outputs=[]).
             documents.change(
+                self._pull_embed_model,
+                inputs=[],
+                outputs=[status],
+            ).then(
                 self._processing_document,
                 inputs=[documents],
                 outputs=[system_prompt, status],

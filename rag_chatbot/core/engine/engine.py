@@ -10,11 +10,14 @@ from ...setting import RAGSettings
 
 class LocalChatEngine:
     def __init__(
-        self, setting: RAGSettings | None = None, host: str = "host.docker.internal"
+        self,
+        setting: RAGSettings | None = None,
+        category: str = None,
+        host: str = "host.docker.internal",
     ):
         super().__init__()
         self._setting = setting or RAGSettings()
-        self._retriever = LocalRetriever(self._setting)
+        self._retriever = LocalRetriever(self._setting, category)
         self._host = host
 
     def set_engine(

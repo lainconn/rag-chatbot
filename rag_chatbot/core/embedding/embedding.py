@@ -1,9 +1,5 @@
-import os
-import torch
 import requests
 from llama_index.embeddings.ollama import OllamaEmbedding
-from llama_index.embeddings.openai import OpenAIEmbedding
-from transformers import AutoModel, AutoTokenizer
 from ...setting import RAGSettings
 from dotenv import load_dotenv
 

@@ -16,6 +16,7 @@ from llama_index.core.schema import BaseNode, NodeWithScore, QueryBundle, IndexN
 from llama_index.core.llms.llm import LLM
 from llama_index.retrievers.bm25 import BM25Retriever
 from llama_index.core import Settings, VectorStoreIndex
+from llama_index.core.vector_stores.types import MetadataFilter, MetadataFilters
 from ..prompt import get_query_gen_prompt
 from ...setting import RAGSettings
 
@@ -57,6 +58,7 @@ class TwoStageRetriever(QueryFusionRetriever):
         self._rerank_model = SentenceTransformerRerank(
             top_n=self._setting.retriever.top_k_rerank,
             model=self._setting.retriever.rerank_llm,
+            # cache_dir="~/.cache/torch/sentence_transformers",
         )
 
     def _retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
@@ -83,24 +85,28 @@ class TwoStageRetriever(QueryFusionRetriever):
 
 class LocalRetriever:
     def __init__(
-        self, setting: RAGSettings | None = None, host: str = "host.docker.internal"
+        self,
+        setting: RAGSettings | None = None,
+        host: str = "host.docker.internal",
+        category: str = None,
     ):
         super().__init__()
         self._setting = setting or RAGSettings()
         self._host = host
+        self._category = category
 
-    def _get_normal_retriever(
-        self,
-        vector_index: VectorStoreIndex,
-        llm: LLM | None = None,
-    ):
-        llm = llm or Settings.llm
-        return VectorIndexRetriever(
-            index=vector_index,
-            similarity_top_k=self._setting.retriever.similarity_top_k,
-            embed_model=Settings.embed_model,
-            verbose=True,
-        )
+    # def _get_normal_retriever(
+    #     self,
+    #     vector_index: VectorStoreIndex,
+    #     llm: LLM | None = None,
+    # ):
+    #     llm = llm or Settings.llm
+    #     return VectorIndexRetriever(
+    #         index=vector_index,
+    #         similarity_top_k=self._setting.retriever.similarity_top_k,
+    #         embed_model=Settings.embed_model,
+    #         verbose=True,
+    #     )
 
     def _get_hybrid_retriever(
         self,
@@ -112,6 +118,9 @@ class LocalRetriever:
         # VECTOR INDEX RETRIEVER
         vector_retriever = VectorIndexRetriever(
             index=vector_index,
+            filters=MetadataFilters(
+                filters=[MetadataFilter(key="category", value=self.category)]
+            ),
             similarity_top_k=self._setting.retriever.similarity_top_k,
             embed_model=Settings.embed_model,
             verbose=True,
@@ -156,13 +165,13 @@ class LocalRetriever:
         nodes: List[BaseNode],
         llm: LLM | None = None,
     ):
-        fusion_tool = RetrieverTool.from_defaults(
-            retriever=self._get_hybrid_retriever(
-                vector_index, nodes, llm, gen_query=True
-            ),
-            description="Используй этот инструмент, если запрос пользователя неоднозначен или неясен.",
-            name="Fusion Retriever with BM25 and Vector Retriever and LLM Query Generation.",
-        )
+        # fusion_tool = RetrieverTool.from_defaults(
+        #     retriever=self._get_hybrid_retriever(
+        #         vector_index, nodes, llm, gen_query=True
+        #     ),
+        #     description="Используй этот инструмент, если запрос пользователя неоднозначен или неясен.",
+        #     name="Fusion Retriever with BM25 and Vector Retriever and LLM Query Generation.",
+        # )
         two_stage_tool = RetrieverTool.from_defaults(
             retriever=self._get_hybrid_retriever(
                 vector_index, nodes, llm, gen_query=False
@@ -171,11 +180,17 @@ class LocalRetriever:
             name="Two Stage Retriever with BM25 and Vector Retriever and LLM Rerank.",
         )
 
-        return RouterRetriever.from_defaults(
-            selector=LLMSingleSelector.from_defaults(llm=llm),
-            retriever_tools=[fusion_tool, two_stage_tool],
-            llm=llm,
+        retriever = self._get_hybrid_retriever(
+            vector_index, nodes, llm, gen_query=False
         )
+
+        return retriever
+
+        # return RouterRetriever.from_defaults(
+        #     selector=LLMSingleSelector.from_defaults(llm=llm),
+        #     retriever_tools=[fusion_tool, two_stage_tool],
+        #     llm=llm,
+        # )
 
     def get_retrievers(
         self,
@@ -188,9 +203,9 @@ class LocalRetriever:
             embed_model=Settings.embed_model,
         )
 
-        if len(nodes) > self._setting.retriever.top_k_rerank:
-            retriever = self._get_router_retriever(vector_index, nodes, llm)
-        else:
-            retriever = self._get_normal_retriever(vector_index, llm)
+        # if len(nodes) > self._setting.retriever.top_k_rerank:
+        retriever = self._get_router_retriever(vector_index, nodes, llm)
+        # else:
+        # retriever = self._get_normal_retriever(vector_index, llm)
 
         return retriever

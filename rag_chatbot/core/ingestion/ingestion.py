@@ -58,16 +58,22 @@ class LocalDataIngestion:
                         elements = json.load(file)
                     try:
                         for key_for_lists, inner_dict in elements.items():
-                            for i in range(len(inner_dict.values())):
+                            _category = key_for_lists
+                            _get_dict_len = max(
+                                len(el)
+                                for el in inner_dict.values()
+                                if isinstance(el, List)
+                            )
+                            for i in range(_get_dict_len):
                                 text = f"{key_for_lists}: "
                                 for key, value_list in inner_dict.items():
                                     text += f"{key}: {value_list[i]}; "
 
-                                print(text.strip())
                                 document = Document(
                                     text=text,
                                     metadata={
                                         "file_name": file_name,
+                                        "category": _category,
                                     },
                                 )
 
@@ -83,6 +89,7 @@ class LocalDataIngestion:
                         for i in range(max_length):
                             text = ""
                             for key, value_list in elements.items():
+                                category = key
                                 if i < len(value_list):
                                     text += f"{key}: {value_list[i]}; "
 
@@ -90,6 +97,7 @@ class LocalDataIngestion:
                                 text=text,
                                 metadata={
                                     "file_name": file_name,
+                                    "category": category,
                                 },
                             )
 
@@ -109,10 +117,13 @@ class LocalDataIngestion:
                     for element in elements:
                         text += element.text + "\n\n"
 
+                    # category = program(chunks=text)
+
                     document = Document(
                         text=text,
                         metadata={
                             "file_name": file_name,
+                            # "category": category,
                         },
                     )
 
@@ -124,6 +135,7 @@ class LocalDataIngestion:
         return None
 
     def reset(self):
+        self._ingested_ids.clear()
         return self._vector_store.clear()
 
     def check_nodes_exist(self):
@@ -136,6 +148,7 @@ class LocalDataIngestion:
 
     def get_ingested_nodes(self):
         try:
-            return self._vector_store.get_nodes(node_ids=list(self._ingested_ids))
+            nodes = self._vector_store.get_nodes(node_ids=list(self._ingested_ids))
+            return nodes
         except:
             return []
