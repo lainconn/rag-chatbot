@@ -115,11 +115,12 @@ class LocalRetriever:
         llm: LLM | None = None,
         gen_query: bool = True,
     ):
+
         # VECTOR INDEX RETRIEVER
         vector_retriever = VectorIndexRetriever(
             index=vector_index,
             filters=MetadataFilters(
-                filters=[MetadataFilter(key="category", value=self.category)]
+                filters=[MetadataFilter(key="category", value=self._category)]
             ),
             similarity_top_k=self._setting.retriever.similarity_top_k,
             embed_model=Settings.embed_model,
@@ -172,13 +173,13 @@ class LocalRetriever:
         #     description="Используй этот инструмент, если запрос пользователя неоднозначен или неясен.",
         #     name="Fusion Retriever with BM25 and Vector Retriever and LLM Query Generation.",
         # )
-        two_stage_tool = RetrieverTool.from_defaults(
-            retriever=self._get_hybrid_retriever(
-                vector_index, nodes, llm, gen_query=False
-            ),
-            description="Используй этот инструмент, когда запрос пользователя ясен и недвусмыслен.",
-            name="Two Stage Retriever with BM25 and Vector Retriever and LLM Rerank.",
-        )
+        # two_stage_tool = RetrieverTool.from_defaults(
+        #     retriever=self._get_hybrid_retriever(
+        #         vector_index, nodes, llm, gen_query=False
+        #     ),
+        #     description="Используй этот инструмент, когда запрос пользователя ясен и недвусмыслен.",
+        #     name="Two Stage Retriever with BM25 and Vector Retriever and LLM Rerank.",
+        # )
 
         retriever = self._get_hybrid_retriever(
             vector_index, nodes, llm, gen_query=False

@@ -11,6 +11,7 @@ from .core import (
 from llama_index.core import Settings
 from llama_index.core.chat_engine.types import StreamingAgentChatResponse
 from llama_index.core.prompts import ChatMessage, MessageRole
+import re
 
 
 class LocalRAGPipeline:
@@ -94,13 +95,19 @@ class LocalRAGPipeline:
         llm = Settings.llm
         prompt = get_so_prompt()
         schema = get_pydantic()
-        response = llm.stream_structured_predict(
+
+        response = llm.structured_predict(
             schema,
             prompt,
             query=message,
         )
-        for r in response:
-            print(r)
+
+        response = re.sub(r"[\d\.]+", " ", response.classifier).strip()
+        return response
+
+    # Fix later
+    def set_category(self):
+        self._engine = LocalChatEngine(host=self._host, category=self._category)
 
     def get_history(self, chatbot: list[list[str]]):
         history = []
@@ -117,8 +124,9 @@ class LocalRAGPipeline:
             history = self.get_history(chatbot)
             return self._query_engine.stream_chat(message, history)
         else:
-            # self._query_engine.reset()
             self._category = self.get_category(message)
-            print(self._category)
+            # Fix later: double engine init. During _document_processing and here!
+            self.set_category()
+            self.set_engine()
             history = self.get_history(chatbot)
             return self._query_engine.stream_chat(message, history)

@@ -316,6 +316,7 @@ class LocalChatbotUI:
                                     "gemma3:4b",
                                     "gemma3:12b",
                                     "qwen3:8b",
+                                    "gpt-oss:20b",
                                 ],
                                 value=None,
                                 interactive=True,

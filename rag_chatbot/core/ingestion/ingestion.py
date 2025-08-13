@@ -23,7 +23,7 @@ class LocalDataIngestion:
         self._setting = setting or RAGSettings()
         self._vector_store = LocalVectorStore().vector_store
         self._ingested_ids = set()
-        self._customizer = get_pydantic().customize
+        # self._customizer = get_pydantic().customize
 
     def store_nodes(
         self,
@@ -70,10 +70,10 @@ class LocalDataIngestion:
                                     text += f"{key}: {value_list[i]}; "
 
                                 document = Document(
-                                    text=text,
+                                    text=text.strip(),
                                     metadata={
                                         "file_name": file_name,
-                                        "category": _category,
+                                        "category": _category.strip(),
                                     },
                                 )
 
@@ -94,10 +94,10 @@ class LocalDataIngestion:
                                     text += f"{key}: {value_list[i]}; "
 
                             document = Document(
-                                text=text,
+                                text=text.strip(),
                                 metadata={
                                     "file_name": file_name,
-                                    "category": category,
+                                    "category": category.strip(),
                                 },
                             )
 
@@ -120,7 +120,7 @@ class LocalDataIngestion:
                     # category = program(chunks=text)
 
                     document = Document(
-                        text=text,
+                        text=text.strip(),
                         metadata={
                             "file_name": file_name,
                             # "category": category,

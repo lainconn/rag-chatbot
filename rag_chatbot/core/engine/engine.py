@@ -17,7 +17,7 @@ class LocalChatEngine:
     ):
         super().__init__()
         self._setting = setting or RAGSettings()
-        self._retriever = LocalRetriever(self._setting, category)
+        self._retriever = LocalRetriever(setting=self._setting, category=category)
         self._host = host
 
     def set_engine(

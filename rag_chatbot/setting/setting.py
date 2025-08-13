@@ -13,7 +13,7 @@ class OllamaSettings(BaseModel):
     request_timeout: float = Field(default=600, description="Request timeout")
     port: int = Field(default=11434, description="Port number")
     context_window: int = Field(default=8000, description="Context window size")
-    temperature: float = Field(default=0.1, description="Temperature")
+    temperature: float = Field(default=0.5, description="Temperature")
     chat_token_limit: int = Field(default=4000, description="Chat memory limit")
 
 
@@ -21,14 +21,14 @@ class RetrieverSettings(BaseModel):
     num_queries: int = Field(default=5, description="Number of generated queries")
     similarity_top_k: int = Field(default=5, description="Top k documents")
     retriever_weights: List[float] = Field(
-        default=[0.4, 0.6], description="Weights for retriever"
+        default=[0.8, 0.2], description="Weights for retriever"
     )
     top_k_rerank: int = Field(default=5, description="Top k rerank")
     rerank_llm: str = Field(
         default="BAAI/bge-reranker-v2-m3",
         description="Rerank LLM model",
     )
-    fusion_mode: str = Field(default="dist_based_score", description="Fusion mode")
+    fusion_mode: str = Field(default="reciprocal_rerank", description="Fusion mode")
 
 
 class IngestionSettings(BaseModel):
