@@ -10,9 +10,11 @@ services:
     ports:
       - 7860:7860
       - 5678:5678
+    environment:
+      - HF_HOME=/.cache/hg/sentence_transformers
     volumes:  # overwrites dockerfile [change for prod]
       - .:/code
-      # - hg_volume:/.cache/torch/sentence_transformers
+      - hg_volume:$HF_HOME
     networks:
       - local_network
 
@@ -51,4 +53,4 @@ networks:
 
 volumes:
   ollama:
-  # hg_volume:
+  hg_volume:
