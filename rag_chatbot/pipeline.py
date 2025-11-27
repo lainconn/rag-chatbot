@@ -108,7 +108,7 @@ class LocalRAGPipeline:
         return response
 
     def set_category(self) -> None:
-        self._engine = LocalChatEngine(host=self._host, category=self._category)
+        self._engine.update_category(self._category)
 
     def get_history(self, chatbot: list[list[str]]):
         history = []
@@ -126,7 +126,6 @@ class LocalRAGPipeline:
             return self._query_engine.stream_chat(message, history)
         else:
             self._category = self.get_category(message)
-            # TODO: Optimize to avoid double engine initialization
             self.set_category()
             self.set_engine()
             history = self.get_history(chatbot)

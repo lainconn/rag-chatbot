@@ -27,6 +27,10 @@ class LocalChatEngine:
         self._retriever = LocalRetriever(setting=self._setting, category=category)
         self._host = host
 
+    def update_category(self, category: str) -> None:
+        """Update the category for document filtering."""
+        self._retriever.update_category(category)
+
     def set_engine(
         self,
         llm: LLM,

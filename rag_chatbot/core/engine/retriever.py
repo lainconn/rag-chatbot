@@ -104,6 +104,10 @@ class LocalRetriever:
         self._host = host
         self._category = category
 
+    def update_category(self, category: str) -> None:
+        """Update the category for document filtering."""
+        self._category = category
+
     # def _get_normal_retriever(
     #     self,
     #     vector_index: VectorStoreIndex,
