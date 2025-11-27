@@ -1,10 +1,12 @@
 import argparse
+
 import llama_index
 from dotenv import load_dotenv
-from .ui import LocalChatbotUI
-from .pipeline import LocalRAGPipeline
+
 from .logger import Logger
-from .ollama import run_ollama_server, is_port_open
+from .ollama import is_port_open, run_ollama_server
+from .pipeline import LocalRAGPipeline
+from .ui import LocalChatbotUI
 
 load_dotenv()
 

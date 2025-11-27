@@ -3,18 +3,18 @@ import threading
 import socket
 
 
-def run_ollama_server():
-    async def run_process(cmd):
-        print('>>> starting', *cmd)
+def run_ollama_server() -> None:
+    async def run_process(cmd) -> None:
+        print(">>> starting", *cmd)
         process = await asyncio.create_subprocess_exec(
             *cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            # env={**os.environ, 'OLLAMA_NUM_PARALLEL': '8', 'OLLAMA_MAX_LOADED_MODELS': '1'}
+            # env={**os.environ, "OLLAMA_NUM_PARALLEL": "8", "OLLAMA_MAX_LOADED_MODELS": "1"}
         )
 
         # define an async pipe function
-        async def pipe(lines):
+        async def pipe(lines) -> None:
             async for line in lines:
                 print(line.decode().strip())
 
@@ -26,10 +26,10 @@ def run_ollama_server():
         # call it
         await asyncio.gather(pipe(process.stdout), pipe(process.stderr))
 
-    async def start_ollama_serve():
-        await run_process(['ollama', 'serve'])
+    async def start_ollama_serve() -> None:
+        await run_process(["ollama", "serve"])
 
-    def run_async_in_thread(loop, coro):
+    def run_async_in_thread(loop, coro) -> None:
         asyncio.set_event_loop(loop)
         loop.run_until_complete(coro)
         loop.close()
@@ -42,10 +42,10 @@ def run_ollama_server():
     thread.start()
 
 
-def is_port_open(port):
+def is_port_open(port: int) -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            s.connect(('localhost', port))
+            s.connect(("localhost", port))
             return True
         except ConnectionRefusedError:
             return False

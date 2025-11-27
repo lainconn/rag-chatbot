@@ -1,30 +1,34 @@
+import argparse
 import asyncio
 import json
-import argparse
+
 import pandas as pd
 from dotenv import load_dotenv
-from tqdm.asyncio import tqdm_asyncio
-from llama_index.core import VectorStoreIndex, Settings
-from llama_index.core.retrievers import VectorIndexRetriever
-from llama_index.retrievers.bm25 import BM25Retriever
-from llama_index.core.postprocessor import SentenceTransformerRerank
+from llama_index.core import Settings, VectorStoreIndex
 from llama_index.core.evaluation import (
-    RetrieverEvaluator,
-    FaithfulnessEvaluator,
     AnswerRelevancyEvaluator,
     ContextRelevancyEvaluator,
+    EmbeddingQAFinetuneDataset,
+    FaithfulnessEvaluator,
+    RetrieverEvaluator,
 )
-from llama_index.core.evaluation import EmbeddingQAFinetuneDataset
+from llama_index.core.postprocessor import SentenceTransformerRerank
+from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.core.storage.docstore import DocumentStore
+from llama_index.retrievers.bm25 import BM25Retriever
+from tqdm.asyncio import tqdm_asyncio
+
 from ..core.engine import LocalChatEngine, LocalRetriever
 from ..core.model import LocalRAGModel
-from ..setting import RAGSettings
 from ..ollama import is_port_open, run_ollama_server
+from ..setting import RAGSettings
 
 load_dotenv()
 
 
 class RAGPipelineEvaluator:
+    """Evaluates RAG pipeline performance using various metrics."""
+
     def __init__(
         self,
         llm: str | None = None,
@@ -251,7 +255,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.host != "host.docker.internal":
         port_number = 11434
-        if not is_port_open(port_number) and args.llm not in ["gpt-3.5-turbo", "gpt-4", "gpt-4o", "gpt-4-turbo"]:
+        if (
+            not is_port_open(port_number)
+            and args.llm not in ["gpt-3.5-turbo", "gpt-4", "gpt-4o", "gpt-4-turbo"]
+        ):
             run_ollama_server()
     evaluator = RAGPipelineEvaluator(
         llm=args.llm,

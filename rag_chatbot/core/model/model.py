@@ -1,12 +1,15 @@
-from llama_index.llms.ollama import Ollama
-from ...setting import RAGSettings
-from dotenv import load_dotenv
 import requests
+
+from dotenv import load_dotenv
+from llama_index.llms.ollama import Ollama
+
+from ...setting import RAGSettings
 
 load_dotenv()
 
 
 class LocalRAGModel:
+    """Handles RAG model operations for LLM interactions."""
 
     @staticmethod
     def set(

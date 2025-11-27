@@ -1,27 +1,32 @@
+import json
 import os
 import shutil
-import json
 import sys
 import time
-import gradio as gr
 from dataclasses import dataclass
 from typing import ClassVar
+
+import gradio as gr
 from llama_index.core.chat_engine.types import StreamingAgentChatResponse
-from .theme import JS_LIGHT_THEME, CSS
-from ..pipeline import LocalRAGPipeline
+
+from .theme import CSS, JS_LIGHT_THEME
 from ..logger import Logger
+from ..pipeline import LocalRAGPipeline
 
 
 @dataclass
 class DefaultElement:
+    """Default UI elements and messages for the chatbot interface."""
+
     DEFAULT_MESSAGE: ClassVar[dict] = {"text": ""}
     DEFAULT_MODEL: str = ""
     DEFAULT_HISTORY: ClassVar[list] = []
     DEFAULT_DOCUMENT: ClassVar[list] = []
 
     HELLO_MESSAGE: str = """Приветствую!
-    Я могу проконсультировать вас в вопросах получения кредита, \
-    совершения операций с банковскими картами, условиям по сбер. картам и расчетному обслуживанию физ. лиц."""
+    Я могу проконсультировать вас в вопросах получения кредита,
+    совершения операций с банковскими картами, условиям по сбер.
+    картам и расчетному обслуживанию физ. лиц."""
     SET_MODEL_MESSAGE: str = "Пожалуйста, выберите модель из списка!"
     EMPTY_MESSAGE: str = "Пожалуйста, введите сообщение!"
     DEFAULT_STATUS: str = "Готово!"
@@ -36,6 +41,8 @@ class DefaultElement:
 
 
 class LLMResponse:
+    """Handles LLM response streaming for the UI."""
+
     def __init__(self) -> None:
         pass
 
@@ -48,13 +55,13 @@ class LLMResponse:
                 DefaultElement.DEFAULT_STATUS,
             )
 
-    def welcome(self):
+    def welcome(self) -> None:
         yield from self._yield_string(DefaultElement.HELLO_MESSAGE)
 
-    def set_model(self):
+    def set_model(self) -> None:
         yield from self._yield_string(DefaultElement.SET_MODEL_MESSAGE)
 
-    def empty_message(self):
+    def empty_message(self) -> None:
         yield from self._yield_string(DefaultElement.EMPTY_MESSAGE)
 
     def stream_response(
@@ -79,6 +86,8 @@ class LLMResponse:
 
 
 class LocalChatbotUI:
+    """Local Chatbot UI using Gradio for the web interface."""
+
     def __init__(
         self,
         pipeline: LocalRAGPipeline,
@@ -122,7 +131,7 @@ class LocalChatbotUI:
                 yield m
             sys.stdout = console
 
-    def _get_confirm_pull_model(self, model: str):
+    def _get_confirm_pull_model(self, model: str) -> tuple:
         if (model in ["gpt-3.5-turbo", "gpt-4"]) or (self._pipeline.check_exist(model)):
             self._change_model(model)
             return (
@@ -136,7 +145,7 @@ class LocalChatbotUI:
             DefaultElement.CONFIRM_PULL_MODEL_STATUS,
         )
 
-    def _pull_model(self, model: str, progress=gr.Progress(track_tqdm=True)):
+    def _pull_model(self, model: str, progress=gr.Progress(track_tqdm=True)) -> tuple:
         if (model not in ["gpt-3.5-turbo", "gpt-4"]) and not (
             self._pipeline.check_exist(model)
         ):
@@ -165,11 +174,11 @@ class LocalChatbotUI:
             model,
         )
 
-    def _pull_embed_model(self, progress=gr.Progress(track_tqdm=True)):
+    def _pull_embed_model(self, progress=gr.Progress(track_tqdm=True)) -> tuple:
         if not (self._pipeline.check_exist_embed()):
             response = self._pipeline.pull_embed_model()
             if response.status_code == 200:
-                gr.Info(f"Загрузка выполнена!")
+                gr.Info("Загрузка выполнена!")
                 for data in response.iter_lines(chunk_size=1):
                     data = json.loads(data)
                     if "completed" in data.keys() and "total" in data.keys():
@@ -177,7 +186,7 @@ class LocalChatbotUI:
                     else:
                         progress(0.0)
             else:
-                gr.Warning(f"Ошибка!")
+                gr.Warning("Ошибка!")
                 return (
                     DefaultElement.DEFAULT_MESSAGE,
                     DefaultElement.DEFAULT_HISTORY,
@@ -187,7 +196,7 @@ class LocalChatbotUI:
 
         return (DefaultElement.COMPLETED_STATUS,)
 
-    def _change_model(self, model: str):
+    def _change_model(self, model: str) -> str:
         if model not in [None, ""]:
             self._pipeline.set_model_name(model)
             self._pipeline.set_model()
@@ -195,7 +204,7 @@ class LocalChatbotUI:
             gr.Info(f"Изменение текущей модели на {model}!")
         return DefaultElement.DEFAULT_STATUS
 
-    def _upload_document(self, document: list[str], list_files: list[str] | dict):
+    def _upload_document(self, document: list[str], list_files: list[str] | dict) -> list:
         if document in [None, []]:
             if isinstance(list_files, list):
                 return (list_files, DefaultElement.DEFAULT_DOCUMENT)
@@ -211,7 +220,7 @@ class LocalChatbotUI:
                     return document + list_files.get("files")
                 return document
 
-    def _reset_document(self):
+    def _reset_document(self) -> tuple:
         self._pipeline.reset_documents()
         gr.Info("Очистка документов выполнена успешно!")
         return (
@@ -220,7 +229,7 @@ class LocalChatbotUI:
             gr.update(visible=False),
         )
 
-    def _show_document_btn(self, document: list[str]):
+    def _show_document_btn(self, document: list[str]) -> tuple:
         visible = False if document in [None, []] else True
         return (gr.update(visible=visible), gr.update(visible=visible))
 
@@ -242,23 +251,23 @@ class LocalChatbotUI:
         # return DefaultElement.COMPLETED_STATUS
         return (self._pipeline.get_system_prompt(), DefaultElement.COMPLETED_STATUS)
 
-    def _change_system_prompt(self, sys_prompt: str):
+    def _change_system_prompt(self, sys_prompt: str) -> None:
         self._pipeline.set_system_prompt(sys_prompt)
         self._pipeline.set_chat_mode()
         gr.Info("Системный промпт успешно изменен!")
 
-    def _change_language(self, language: str):
+    def _change_language(self, language: str) -> None:
         self._pipeline.set_language(language)
         self._pipeline.set_chat_mode()
         gr.Info(f"Текущей язык успешно изменен на {language}")
 
-    def _undo_chat(self, history: list[list[str, str]]):
+    def _undo_chat(self, history: list[list[str, str]]) -> list:
         if len(history) > 0:
             history.pop(-1)
             return history
         return DefaultElement.DEFAULT_HISTORY
 
-    def _reset_chat(self):
+    def _reset_chat(self) -> tuple:
         self._pipeline.reset_conversation()
         gr.Info("Среда успешно сброшена!")
         return (
@@ -268,7 +277,7 @@ class LocalChatbotUI:
             DefaultElement.DEFAULT_STATUS,
         )
 
-    def _clear_chat(self):
+    def _clear_chat(self) -> tuple:
         self._pipeline.clear_conversation()
         gr.Info("История успешна очищена!")
         return (
@@ -277,16 +286,16 @@ class LocalChatbotUI:
             DefaultElement.DEFAULT_STATUS,
         )
 
-    def _show_hide_setting(self, state):
+    def _show_hide_setting(self, state: bool) -> tuple:
         state = not state
         label = "Скрыть настройки" if state else "Показать настройки"
         return (label, gr.update(visible=state), state)
 
-    def _welcome(self):
+    def _welcome(self) -> None:
         for m in self._llm_response.welcome():
             yield m
 
-    def build(self):
+    def build(self) -> object:
         with gr.Blocks(
             theme=gr.themes.Soft(primary_hue="slate"),
             js=JS_LIGHT_THEME,

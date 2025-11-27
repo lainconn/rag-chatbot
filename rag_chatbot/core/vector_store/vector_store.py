@@ -1,14 +1,17 @@
 import chromadb
+from typing import Any
+
+from dotenv import load_dotenv
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from pydantic import BaseModel
-from typing import Any
-from dotenv import load_dotenv
+
 from ...setting import RAGSettings
 
 load_dotenv()
 
 
 class LocalVectorStore(BaseModel):
+    """Vector store wrapper for ChromaDB operations."""
 
     vector_store: Any = None
     _host: str = "host.docker.internal"

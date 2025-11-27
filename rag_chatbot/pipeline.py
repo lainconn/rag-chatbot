@@ -1,19 +1,23 @@
-from .core import (
-    LocalChatEngine,
-    LocalDataIngestion,
-    LocalRAGModel,
-    LocalEmbedding,
-    LocalVectorStore,
-    get_system_prompt,
-    get_so_prompt,
-    get_pydantic,
-)
+import re
+
 from llama_index.core import Settings
 from llama_index.core.chat_engine.types import StreamingAgentChatResponse
 from llama_index.core.prompts import ChatMessage, MessageRole
-import re 
+
+from .core import (
+    LocalChatEngine,
+    LocalDataIngestion,
+    LocalEmbedding,
+    LocalRAGModel,
+    LocalVectorStore,
+    get_pydantic,
+    get_so_prompt,
+    get_system_prompt,
+) 
 
 class LocalRAGPipeline:
+    """Local RAG Pipeline for handling chat interactions with document ingestion."""
+
     def __init__(self, host: str = "host.docker.internal") -> None:
         self._host = host
         self._model_name = ""
@@ -89,8 +93,7 @@ class LocalRAGPipeline:
             vector_store=self._vector_store,
         )
 
-    # Fix later
-    def get_category(self, message: str):
+    def get_category(self, message: str) -> str:
         llm = Settings.llm
         prompt = get_so_prompt()
         schema = get_pydantic()
@@ -104,8 +107,7 @@ class LocalRAGPipeline:
         response = re.sub(r"[\d\.]+", " ", response.classifier).strip()
         return response
 
-    # Fix later
-    def set_category(self):
+    def set_category(self) -> None:
         self._engine = LocalChatEngine(host=self._host, category=self._category)
 
     def get_history(self, chatbot: list[list[str]]):
@@ -124,7 +126,7 @@ class LocalRAGPipeline:
             return self._query_engine.stream_chat(message, history)
         else:
             self._category = self.get_category(message)
-            # Fix later: double engine init. During _document_processing and here!
+            # TODO: Optimize to avoid double engine initialization
             self.set_category()
             self.set_engine()
             history = self.get_history(chatbot)

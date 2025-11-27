@@ -1,16 +1,18 @@
+import os
 import random
 import re
-import os
 import uuid
 from typing import List
-from tqdm import tqdm
+
+from llama_index.core.evaluation import EmbeddingQAFinetuneDataset
 from llama_index.core.llms.utils import LLM
 from llama_index.core.schema import MetadataMode, TextNode
 from llama_index.core.storage.docstore import DocumentStore
-from llama_index.core.evaluation import EmbeddingQAFinetuneDataset
-from ..core.model import LocalRAGModel
+from tqdm import tqdm
+
 from ..core.embedding import LocalEmbedding
 from ..core.ingestion import LocalDataIngestion
+from ..core.model import LocalRAGModel
 from ..setting import RAGSettings
 
 
@@ -72,6 +74,8 @@ def generate_question_context_pairs(
 
 
 class QAGenerator:
+    """Generates question-answer pairs from documents for evaluation."""
+
     def __init__(
         self,
         embed_model: str | None = None,
@@ -96,7 +100,6 @@ class QAGenerator:
 
         if os.path.exists(os.path.join(output_dir, "docstore.json")):
             print("Docstore already exist! Skip ingestion.")
-            
 
         nodes = self._ingestion.store_nodes(input_files, embed_nodes=True)
         random.shuffle(nodes)

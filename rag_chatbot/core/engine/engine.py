@@ -1,17 +1,21 @@
+from typing import List
+
 from llama_index.core.chat_engine import (
     CondensePlusContextChatEngine,
     SimpleChatEngine,
 )
-from llama_index.core.vector_stores import SimpleVectorStore
-from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core.llms.llm import LLM
+from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core.schema import BaseNode
-from typing import List
+from llama_index.core.vector_stores import SimpleVectorStore
+
 from .retriever import LocalRetriever
 from ...setting import RAGSettings
 
 
 class LocalChatEngine:
+    """Chat engine for handling conversational interactions."""
+
     def __init__(
         self,
         setting: RAGSettings | None = None,

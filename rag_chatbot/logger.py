@@ -4,6 +4,8 @@ import re
 
 
 class Logger:
+    """Logger class for capturing stdout to file."""
+
     def __init__(self, filename):
 
         self.filename = os.path.join(os.getcwd(), filename)

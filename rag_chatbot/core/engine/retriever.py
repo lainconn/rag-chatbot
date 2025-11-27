@@ -1,23 +1,22 @@
 from typing import List
+
 from dotenv import load_dotenv
+from llama_index.core import Settings, VectorStoreIndex
+from llama_index.core.callbacks.base import CallbackManager
+from llama_index.core.llms.llm import LLM
 from llama_index.core.retrievers import (
     BaseRetriever,
     QueryFusionRetriever,
     VectorIndexRetriever,
-    RouterRetriever,
 )
-from llama_index.core.vector_stores import SimpleVectorStore
-from llama_index.core.callbacks.base import CallbackManager
 from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
-from llama_index.core.postprocessor import SimilarityPostprocessor
-from llama_index.postprocessor.sbert_rerank import SentenceTransformerRerank
+from llama_index.core.schema import BaseNode, IndexNode, NodeWithScore, QueryBundle
 from llama_index.core.tools import RetrieverTool
-from llama_index.core.selectors import LLMSingleSelector
-from llama_index.core.schema import BaseNode, NodeWithScore, QueryBundle, IndexNode
-from llama_index.core.llms.llm import LLM
-from llama_index.retrievers.bm25 import BM25Retriever
-from llama_index.core import Settings, VectorStoreIndex
+from llama_index.core.vector_stores import SimpleVectorStore
 from llama_index.core.vector_stores.types import MetadataFilter, MetadataFilters
+from llama_index.postprocessor.sbert_rerank import SentenceTransformerRerank
+from llama_index.retrievers.bm25 import BM25Retriever
+
 from ..prompt import get_query_gen_prompt
 from ...setting import RAGSettings
 
@@ -25,6 +24,8 @@ load_dotenv()
 
 
 class TwoStageRetriever(QueryFusionRetriever):
+    """Two-stage retriever with query generation and reranking."""
+
     def __init__(
         self,
         retrievers: List[BaseRetriever],
@@ -68,7 +69,7 @@ class TwoStageRetriever(QueryFusionRetriever):
         queries: List[QueryBundle] = [query_bundle]
         if self.num_queries > 1:
             queries.extend(self._get_queries(query_bundle.query_str))
-        # TODO: find a way to use async calls to chromadb, currently only sync calls are supported
+        # TODO: enable async calls to chromadb, currently only sync supported
         if self.use_async:
             results = self._run_nested_async_queries(queries)
         else:
@@ -90,6 +91,8 @@ class TwoStageRetriever(QueryFusionRetriever):
 
 
 class LocalRetriever:
+    """Handles document retrieval using various retrieval strategies."""
+
     def __init__(
         self,
         setting: RAGSettings | None = None,
@@ -180,14 +183,23 @@ class LocalRetriever:
         #     retriever=self._get_hybrid_retriever(
         #         vector_index, nodes, llm, gen_query=True
         #     ),
-        #     description="Используй этот инструмент, если запрос пользователя неоднозначен или неясен.",
-        #     name="Fusion Retriever with BM25 and Vector Retriever and LLM Query Generation.",
+        #     description=(
+        #         "Используй этот инструмент, если запрос пользователя "
+        #         "неоднозначен или неясен."
+        #     ),
+        #     name=(
+        #         "Fusion Retriever with BM25 and Vector Retriever and "
+        #         "LLM Query Generation."
+        #     ),
         # )
         # two_stage_tool = RetrieverTool.from_defaults(
         #     retriever=self._get_hybrid_retriever(
         #         vector_index, nodes, llm, gen_query=False
         #     ),
-        #     description="Используй этот инструмент, когда запрос пользователя ясен и недвусмыслен.",
+        #     description=(
+        #         "Используй этот инструмент, когда запрос пользователя "
+        #         "ясен и недвусмыслен."
+        #     ),
         #     name="Two Stage Retriever with BM25 and Vector Retriever and LLM Rerank.",
         # )
 

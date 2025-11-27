@@ -1,13 +1,17 @@
 import requests
-from llama_index.embeddings.ollama import OllamaEmbedding
-from ...setting import RAGSettings
+
 from dotenv import load_dotenv
+from llama_index.embeddings.ollama import OllamaEmbedding
+
+from ...setting import RAGSettings
 
 
 load_dotenv()
 
 
 class LocalEmbedding:
+    """Handles embedding model operations."""
+
     @staticmethod
     def set(setting: RAGSettings | None = None, host: str = "host.docker.internal"):
         setting = setting or RAGSettings()

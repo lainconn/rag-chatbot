@@ -1,21 +1,25 @@
-from llama_index.core import Document, Settings
-from llama_index.core.schema import BaseNode
-from llama_index.core.node_parser import SentenceSplitter
-from llama_index.core.program import LLMTextCompletionProgram
-from dotenv import load_dotenv
-from typing import Any, List
-from tqdm import tqdm
-from ...setting import RAGSettings
-from ..vector_store import LocalVectorStore
-from ..prompt import get_so_prompt, get_pydantic
 import json
 from pathlib import Path
+from typing import Any, List
+
+from dotenv import load_dotenv
+from llama_index.core import Document, Settings
+from llama_index.core.node_parser import SentenceSplitter
+from llama_index.core.program import LLMTextCompletionProgram
+from llama_index.core.schema import BaseNode
+from tqdm import tqdm
 from unstructured.partition.auto import partition
+
+from ...setting import RAGSettings
+from ..prompt import get_pydantic, get_so_prompt
+from ..vector_store import LocalVectorStore
 
 load_dotenv()
 
 
 class LocalDataIngestion:
+    """Handles data ingestion and document processing for the RAG system."""
+
     def __init__(
         self,
         setting: RAGSettings | None = None,
