@@ -4,7 +4,8 @@ from typing import List
 
 class OllamaSettings(BaseModel):
     llm: str = Field(default="llama3.1:latest", description="LLM model")
-    keep_alive: str = Field(default="-1", description="Keep alive time for the server")
+    thinking: bool = Field(default=False, description="Thinking mode for LLM")
+    keep_alive: int = Field(default=-1, description="Keep alive time for the server")
     tfs_z: float = Field(default=1.0, description="TFS normalization factor")
     top_k: int = Field(default=40, description="Top k sampling")
     top_p: float = Field(default=0.9, description="Top p sampling")
@@ -32,7 +33,7 @@ class RetrieverSettings(BaseModel):
 
 
 class IngestionSettings(BaseModel):
-    embed_llm: str = Field(default="bge-m3", description="Embedding LLM model")
+    embed_llm: str = Field(default="bge-m3:latest", description="Embedding LLM model")
     embed_batch_size: int = Field(default=8, description="Embedding batch size")
     # cache_folder: str = Field(default="data/huggingface", description="Cache folder")
     chunk_size: int = Field(default=512, description="Document chunk size")

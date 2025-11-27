@@ -239,6 +239,7 @@ class LocalChatbotUI:
             self._pipeline.store_nodes(input_files=document)
         self._pipeline.set_chat_mode()
         gr.Info("Обработка прошла успешно!")
+        # return DefaultElement.COMPLETED_STATUS
         return (self._pipeline.get_system_prompt(), DefaultElement.COMPLETED_STATUS)
 
     def _change_system_prompt(self, sys_prompt: str):
@@ -373,6 +374,8 @@ class LocalChatbotUI:
                             show_copy_button=True,
                             bubble_full_width=False,
                             avatar_images=self._avatar_images,
+                            sanitize_html=True,
+                            allow_tags=["thinking"],
                         )
 
                         with gr.Row(variant=self._variant):
@@ -476,6 +479,7 @@ class LocalChatbotUI:
                 self._processing_document,
                 inputs=[documents],
                 outputs=[system_prompt, status],
+                # outputs=[status],
             ).then(
                 self._show_document_btn,
                 inputs=[documents],

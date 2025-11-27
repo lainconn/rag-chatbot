@@ -11,13 +11,14 @@ services:
       - 7860:7860
       - 5678:5678
     environment:
-      - HF_HOME=/.cache/hg/sentence_transformers
+      - HF_HOME=${HF_HOME}
     volumes:  # overwrites dockerfile [change for prod]
       - .:/code
-      - hg_volume:$HF_HOME
+      - hg_volume:${HF_HOME}
     networks:
       - local_network
-
+    profiles:
+      - main
   chromadb:
     container_name: chromadb
     image: chromadb/chroma:1.0.16
@@ -26,27 +27,56 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - ./data/chroma:/data
+      - ./data/chroma:${CHROMA_PATH}
     networks:
       - local_network
+    profiles:
+      - main
+      - test
   ollama:
     container_name: ollama
     image: ollama/ollama:0.11.4
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [compute, utility]
-    # runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [compute, utility]
+    runtime: nvidia
+    environment:
+      - OLLAMA_MODELS=${OLLAMA_MODELS}
     ports:
       - 11434:11434
     volumes:
-      - ollama:/root/.ollama
+      - ollama:${OLLAMA_MODELS}
     networks:
       - local_network
-      
+    profiles:
+      - main
+      - test
+  debug:
+    container_name: debug
+    image: rag-chatbot-app:latest
+    command: ["uv", "run", "pytest"]
+    depends_on:
+      ollama:
+        condition: service_started
+      chromadb:
+        condition: service_started
+    ports:
+      - 7860:7860
+      - 5678:5678
+    environment:
+      - HF_HOME=${HF_HOME}
+    volumes:  # overwrites dockerfile [change for prod]
+      - .:/code
+      - hg_volume:${HF_HOME}
+    networks:
+      - local_network
+    profiles:
+      - test
+
 networks:
   local_network:
     driver: bridge

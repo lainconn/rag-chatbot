@@ -11,8 +11,7 @@ from .core import (
 from llama_index.core import Settings
 from llama_index.core.chat_engine.types import StreamingAgentChatResponse
 from llama_index.core.prompts import ChatMessage, MessageRole
-import re
-
+import re 
 
 class LocalRAGPipeline:
     def __init__(self, host: str = "host.docker.internal") -> None:

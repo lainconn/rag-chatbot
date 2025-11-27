@@ -9,7 +9,8 @@ from llama_index.core.retrievers import (
 from llama_index.core.vector_stores import SimpleVectorStore
 from llama_index.core.callbacks.base import CallbackManager
 from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
-from llama_index.core.postprocessor import SentenceTransformerRerank
+from llama_index.core.postprocessor import SimilarityPostprocessor
+from llama_index.postprocessor.sbert_rerank import SentenceTransformerRerank
 from llama_index.core.tools import RetrieverTool
 from llama_index.core.selectors import LLMSingleSelector
 from llama_index.core.schema import BaseNode, NodeWithScore, QueryBundle, IndexNode
@@ -57,9 +58,11 @@ class TwoStageRetriever(QueryFusionRetriever):
         self._setting = setting or RAGSettings()
         self._rerank_model = SentenceTransformerRerank(
             top_n=self._setting.retriever.top_k_rerank,
-            model=self._setting.retriever.rerank_llm,
-            # cache_dir="~/.cache/torch/sentence_transformers",
+            model_name_or_path=self._setting.retriever.rerank_llm,
+            device="cpu",  # Note that reranking in cpu bound!
+            keep_retrieval_score=True,
         )
+        # self._cutoff_obj = SimilarityPostprocessor(similarity_cutoff=0)
 
     def _retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
         queries: List[QueryBundle] = [query_bundle]
@@ -71,7 +74,9 @@ class TwoStageRetriever(QueryFusionRetriever):
         else:
             results = self._run_sync_queries(queries)
         results = self._simple_fusion(results)
-        return self._rerank_model.postprocess_nodes(results, query_bundle)
+        results = self._rerank_model.postprocess_nodes(results, query_bundle)
+        return results
+        # return self._cutoff_obj.postprocess_nodes(results)
 
     async def _aretrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
         queries: List[QueryBundle] = [query_bundle]
@@ -80,7 +85,8 @@ class TwoStageRetriever(QueryFusionRetriever):
 
         results = await self._run_async_queries(queries)
         results = self._simple_fusion(results)
-        return self._rerank_model.postprocess_nodes(results, query_bundle)
+        results = self._rerank_model.postprocess_nodes(results, query_bundle)
+        return self._cutoff_obj.postprocess_nodes(results)
 
 
 class LocalRetriever:
@@ -127,11 +133,14 @@ class LocalRetriever:
             verbose=True,
         )
 
-        bm25_retriever = BM25Retriever.from_defaults(
-            nodes=nodes,
-            similarity_top_k=self._setting.retriever.similarity_top_k,
-            verbose=True,
-        )
+        # bm25_retriever = BM25Retriever.from_defaults(
+        #     nodes=nodes,
+        #     similarity_top_k=self._setting.retriever.similarity_top_k,
+        #     filters=MetadataFilters(
+        #         filters=[MetadataFilter(key="category", value=self._category)]
+        #     ),
+        #     verbose=True,
+        # )
 
         # FUSION RETRIEVER
         if gen_query:
@@ -148,8 +157,9 @@ class LocalRetriever:
             )
         else:
             hybrid_retriever = TwoStageRetriever(
-                retrievers=[vector_retriever, bm25_retriever],
-                retriever_weights=self._setting.retriever.retriever_weights,
+                # retrievers=[vector_retriever, bm25_retriever],
+                retrievers=[vector_retriever],
+                # retriever_weights=self._setting.retriever.retriever_weights,
                 llm=llm,
                 query_gen_prompt=None,
                 similarity_top_k=self._setting.retriever.similarity_top_k,

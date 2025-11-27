@@ -1,4 +1,7 @@
-from llama_index.core.chat_engine import CondensePlusContextChatEngine, SimpleChatEngine
+from llama_index.core.chat_engine import (
+    CondensePlusContextChatEngine,
+    SimpleChatEngine,
+)
 from llama_index.core.vector_stores import SimpleVectorStore
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core.llms.llm import LLM
@@ -45,5 +48,6 @@ class LocalChatEngine:
         return CondensePlusContextChatEngine.from_defaults(
             retriever=retriever,
             llm=llm,
+            skip_condense=True,
             memory=ChatMemoryBuffer(token_limit=self._setting.ollama.chat_token_limit),
         )
